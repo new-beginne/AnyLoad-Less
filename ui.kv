@@ -1,0 +1,118 @@
+#:import get_color_from_hex kivy.utils.get_color_from_hex
+
+<DotLabel@MDLabel>:
+    font_style: "H6"
+    theme_text_color: "Custom"
+    size_hint: None, None
+    size: "10dp", "48dp"
+
+MDBoxLayout:
+    orientation: "vertical"
+    md_bg_color: "#0D0D0D"
+    
+    # Top Bar
+    MDBoxLayout:
+        size_hint_y: None
+        height: "64dp"
+        padding: "16dp", "8dp"
+        md_bg_color: "#0D0D0D"
+        
+        MDLabel:
+            text: "ANYLOAD"
+            font_style: "H6"
+            theme_text_color: "Custom"
+            text_color: "#00D2A0"
+            halign: "left"
+            size_hint_x: None
+            width: self.texture_size[0]
+        
+        MDBoxLayout:
+            size_hint: None, None
+            size: "60dp", "48dp"
+            pos_hint: {"center_y": 0.5}
+            padding: "8dp", 0
+            
+            DotLabel:
+                id: dot1
+                text: "●"
+                text_color: "#00D2A0" if app.dot_index == 0 else "#333333"
+            
+            DotLabel:
+                id: dot2
+                text: "●"
+                text_color: "#00D2A0" if app.dot_index == 1 else "#333333"
+            
+            DotLabel:
+                id: dot3
+                text: "●"
+                text_color: "#00D2A0" if app.dot_index == 2 else "#333333"
+        
+        Widget:
+    
+    # Screen Manager
+    ScreenManager:
+        id: screen_manager
+        
+        MDScreen:
+            name: "home"
+            MDLabel:
+                text: "HOME TAB"
+                halign: "center"
+                theme_text_color: "Custom"
+                text_color: "#00D2A0"
+        
+        MDScreen:
+            name: "tasks"
+            MDLabel:
+                text: "TASKS TAB"
+                halign: "center"
+                theme_text_color: "Custom"
+                text_color: "#00D2A0"
+        
+        MDScreen:
+            name: "library"
+            MDLabel:
+                text: "LIBRARY TAB"
+                halign: "center"
+                theme_text_color: "Custom"
+                text_color: "#00D2A0"
+        
+        MDScreen:
+            name: "configs"
+            MDLabel:
+                text: "CONFIGS TAB"
+                halign: "center"
+                theme_text_color: "Custom"
+                text_color: "#00D2A0"
+    
+    # Bottom Navigation
+    MDBottomNavigation:
+        size_hint_y: None
+        height: "56dp"
+        md_bg_color: "#1A1A1A"
+        text_color_active: "#00D2A0"
+        text_color_normal: "#666666"
+        
+        MDBottomNavigationItem:
+            name: "home"
+            text: "Home"
+            icon: "home"
+            on_tab_press: screen_manager.current = "home"
+        
+        MDBottomNavigationItem:
+            name: "tasks"
+            text: "Tasks"
+            icon: "download"
+            on_tab_press: screen_manager.current = "tasks"
+        
+        MDBottomNavigationItem:
+            name: "library"
+            text: "Library"
+            icon: "folder"
+            on_tab_press: screen_manager.current = "library"
+        
+        MDBottomNavigationItem:
+            name: "configs"
+            text: "Configs"
+            icon: "cog"
+            on_tab_press: screen_manager.current = "configs"
