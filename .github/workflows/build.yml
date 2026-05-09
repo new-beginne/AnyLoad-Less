@@ -10,6 +10,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
 
     steps:
     - name: Checkout code
@@ -20,33 +21,42 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Install dependencies
+    - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk wget autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
-        pip install --upgrade pip
+        sudo apt-get install -y \
+          git zip unzip openjdk-17-jdk wget \
+          autoconf libtool pkg-config \
+          zlib1g-dev libncurses5-dev libncursesw5-dev \
+          libtinfo5 cmake libffi-dev libssl-dev \
+          build-essential ccache \
+          libltdl-dev libffi-dev libssl-dev python3-dev
+        pip install --upgrade pip setuptools wheel
         pip install --upgrade buildozer cython==0.29.33
 
-    - name: Cache Buildozer
+    - name: Cache Buildozer global directory
       uses: actions/cache@v4
       with:
-        path: |
-          ~/.buildozer
-          .buildozer
-        key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
-        restore-keys: |
-          ${{ runner.os }}-buildozer-
+        path: ~/.buildozer
+        key: buildozer-global-${{ hashFiles('buildozer.spec') }}
+
+    - name: Cache Buildozer local directory
+      uses: actions/cache@v4
+      with:
+        path: .buildozer
+        key: buildozer-local-${{ hashFiles('buildozer.spec') }}
 
     - name: Build APK with Buildozer
       run: |
-        yes | buildozer android debug
+        buildozer -v android debug
       env:
-        ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-        ANDROID_HOME: /usr/local/lib/android/sdk
+        BUILDOZER_WARN_ON_ROOT: 0
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
+      if: success()
       with:
         name: anyload-apk
         path: bin/*.apk
         retention-days: 30
+        compression-level: 0
