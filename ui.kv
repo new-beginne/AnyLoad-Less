@@ -1,22 +1,5 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
 
-<SplashDot@MDLabel>:
-    font_style: "H6"
-    theme_text_color: "Custom"
-    size_hint: None, None
-    size: "15dp", "48dp"
-    halign: "center"
-
-<SpinnerDot@Widget>:
-    size_hint: None, None
-    size: "8dp", "8dp"
-    canvas:
-        Color:
-            rgba: get_color_from_hex("#00D2A0")
-        Ellipse:
-            pos: self.pos
-            size: self.size
-
 MDBoxLayout:
     orientation: "vertical"
     md_bg_color: "#0D0D0D"
@@ -24,20 +7,18 @@ MDBoxLayout:
     ScreenManager:
         id: screen_manager
         
-        # Splash Screen (Initial Loading)
+        # ========== SPLASH SCREEN ==========
         MDScreen:
             name: "loading"
             
-            MDBoxLayout:
-                orientation: "vertical"
+            MDFloatLayout:
                 md_bg_color: "#0D0D0D"
-                
-                Widget:
                 
                 MDBoxLayout:
                     orientation: "vertical"
-                    size_hint_y: None
-                    height: "100dp"
+                    size_hint: None, None
+                    size: "200dp", "100dp"
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
                     spacing: "20dp"
                     
                     MDLabel:
@@ -47,29 +28,46 @@ MDBoxLayout:
                         text_color: "#00D2A0"
                         halign: "center"
                         size_hint_y: None
-                        height: "48dp"
+                        height: "40dp"
                     
                     MDBoxLayout:
+                        orientation: "horizontal"
                         size_hint: None, None
-                        size: "80dp", "48dp"
+                        size: "80dp", "30dp"
                         pos_hint: {"center_x": 0.5}
-                        spacing: "5dp"
+                        spacing: "10dp"
                         
-                        SplashDot:
-                            text: "●"
-                            text_color: "#00D2A0" if app.splash_dot_index == 0 else "#333333"
+                        Widget:
+                            size_hint: None, None
+                            size: "15dp", "15dp"
+                            canvas:
+                                Color:
+                                    rgba: get_color_from_hex("#00D2A0") if app.splash_dot_index == 0 else get_color_from_hex("#333333")
+                                Ellipse:
+                                    pos: self.pos
+                                    size: self.size
                         
-                        SplashDot:
-                            text: "●"
-                            text_color: "#00D2A0" if app.splash_dot_index == 1 else "#333333"
+                        Widget:
+                            size_hint: None, None
+                            size: "15dp", "15dp"
+                            canvas:
+                                Color:
+                                    rgba: get_color_from_hex("#00D2A0") if app.splash_dot_index == 1 else get_color_from_hex("#333333")
+                                Ellipse:
+                                    pos: self.pos
+                                    size: self.size
                         
-                        SplashDot:
-                            text: "●"
-                            text_color: "#00D2A0" if app.splash_dot_index == 2 else "#333333"
-                
-                Widget:
+                        Widget:
+                            size_hint: None, None
+                            size: "15dp", "15dp"
+                            canvas:
+                                Color:
+                                    rgba: get_color_from_hex("#00D2A0") if app.splash_dot_index == 2 else get_color_from_hex("#333333")
+                                Ellipse:
+                                    pos: self.pos
+                                    size: self.size
         
-        # Home Screen with Top Bar
+        # ========== HOME SCREEN ==========
         MDScreen:
             name: "home"
             
@@ -81,89 +79,241 @@ MDBoxLayout:
                 MDBoxLayout:
                     size_hint_y: None
                     height: "64dp"
-                    padding: "16dp", "8dp"
+                    padding: "16dp", "12dp"
                     md_bg_color: "#0D0D0D"
+                    spacing: "10dp"
                     
                     MDLabel:
                         text: "ANYLOAD"
                         font_style: "H6"
                         theme_text_color: "Custom"
                         text_color: "#00D2A0"
-                        halign: "left"
                         size_hint_x: None
                         width: self.texture_size[0]
                     
-                    # Spinner Animation (Only visible when downloading)
+                    # Spinner Animation
                     FloatLayout:
                         size_hint: None, None
-                        size: "50dp", "48dp"
+                        size: "40dp", "40dp"
                         opacity: 1 if app.is_active_download else 0
                         
-                        SpinnerDot:
-                            pos_hint: {"center_x": 0.5, "center_y": 0.7}
+                        Widget:
+                            size_hint: None, None
+                            size: "40dp", "40dp"
+                            pos_hint: {"center_x": 0.5, "center_y": 0.5}
                             canvas.before:
                                 PushMatrix:
                                 Rotate:
-                                    angle: app.spinner_rotation
+                                    angle: app.spinner_angle
                                     origin: self.center
-                            canvas.after:
-                                PopMatrix:
-                        
-                        SpinnerDot:
-                            pos_hint: {"center_x": 0.5, "center_y": 0.7}
-                            canvas.before:
-                                PushMatrix:
-                                Rotate:
-                                    angle: app.spinner_rotation + 120
-                                    origin: self.center
-                            canvas.after:
-                                PopMatrix:
-                        
-                        SpinnerDot:
-                            pos_hint: {"center_x": 0.5, "center_y": 0.7}
-                            canvas.before:
-                                PushMatrix:
-                                Rotate:
-                                    angle: app.spinner_rotation + 240
-                                    origin: self.center
+                            canvas:
+                                Color:
+                                    rgba: get_color_from_hex("#00D2A0")
+                                Ellipse:
+                                    pos: self.x + 15, self.y + 30
+                                    size: 6, 6
+                                Ellipse:
+                                    pos: self.x + 15, self.y + 15
+                                    size: 6, 6
+                                Ellipse:
+                                    pos: self.x + 15, self.y
+                                    size: 6, 6
                             canvas.after:
                                 PopMatrix:
                     
                     Widget:
                 
                 # Main Content
+                ScrollView:
+                    do_scroll_x: False
+                    
+                    MDBoxLayout:
+                        orientation: "vertical"
+                        adaptive_height: True
+                        padding: "20dp"
+                        spacing: "20dp"
+                        
+                        Widget:
+                            size_hint_y: None
+                            height: "20dp"
+                        
+                        # Premium Logo
+                        MDFloatLayout:
+                            size_hint_y: None
+                            height: "100dp"
+                            
+                            Widget:
+                                size_hint: None, None
+                                size: "80dp", "80dp"
+                                pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                                canvas:
+                                    Color:
+                                        rgba: get_color_from_hex("#00D2A0")
+                                    RoundedRectangle:
+                                        pos: self.pos
+                                        size: self.size
+                                        radius: [15]
+                            
+                            MDLabel:
+                                text: "A"
+                                font_style: "H6"
+                                theme_text_color: "Custom"
+                                text_color: "#0D0D0D"
+                                halign: "center"
+                                pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                        
+                        # URL Input Card
+                        MDCard:
+                            size_hint_y: None
+                            height: "60dp"
+                            md_bg_color: "#1A1A1A"
+                            radius: [15]
+                            elevation: 0
+                            padding: "15dp", "10dp"
+                            
+                            MDBoxLayout:
+                                orientation: "horizontal"
+                                spacing: "10dp"
+                                
+                                TextInput:
+                                    id: url_input
+                                    hint_text: "Paste URL here..."
+                                    background_color: 0, 0, 0, 0
+                                    foreground_color: get_color_from_hex("#FFFFFF")
+                                    hint_text_color: get_color_from_hex("#666666")
+                                    cursor_color: get_color_from_hex("#00D2A0")
+                                    font_size: "14sp"
+                                    multiline: False
+                                    padding: 0, 10
+                                
+                                MDIconButton:
+                                    icon: "content-paste"
+                                    theme_text_color: "Custom"
+                                    text_color: "#00D2A0"
+                                    pos_hint: {"center_y": 0.5}
+                                    on_release: app.paste_from_clipboard()
+                        
+                        # Action Cards
+                        MDCard:
+                            size_hint_y: None
+                            height: "70dp"
+                            md_bg_color: "#1A1A1A"
+                            radius: [15]
+                            elevation: 0
+                            
+                            MDBoxLayout:
+                                orientation: "horizontal"
+                                padding: "20dp", "15dp"
+                                spacing: "10dp"
+                                
+                                MDIcon:
+                                    icon: "video"
+                                    theme_text_color: "Custom"
+                                    text_color: "#00D2A0"
+                                    size_hint_x: None
+                                    width: "30dp"
+                                
+                                MDLabel:
+                                    text: "Auto Best Quality"
+                                    font_style: "Subtitle1"
+                                    theme_text_color: "Custom"
+                                    text_color: "#FFFFFF"
+                        
+                        MDCard:
+                            size_hint_y: None
+                            height: "70dp"
+                            md_bg_color: "#1A1A1A"
+                            radius: [15]
+                            elevation: 0
+                            
+                            MDBoxLayout:
+                                orientation: "horizontal"
+                                padding: "20dp", "15dp"
+                                spacing: "10dp"
+                                
+                                MDIcon:
+                                    icon: "music"
+                                    theme_text_color: "Custom"
+                                    text_color: "#00D2A0"
+                                    size_hint_x: None
+                                    width: "30dp"
+                                
+                                MDLabel:
+                                    text: "Audio Only (MP3)"
+                                    font_style: "Subtitle1"
+                                    theme_text_color: "Custom"
+                                    text_color: "#FFFFFF"
+                        
+                        MDCard:
+                            size_hint_y: None
+                            height: "70dp"
+                            md_bg_color: "#1A1A1A"
+                            radius: [15]
+                            elevation: 0
+                            
+                            MDBoxLayout:
+                                orientation: "horizontal"
+                                padding: "20dp", "15dp"
+                                spacing: "10dp"
+                                
+                                MDIcon:
+                                    icon: "playlist-play"
+                                    theme_text_color: "Custom"
+                                    text_color: "#00D2A0"
+                                    size_hint_x: None
+                                    width: "30dp"
+                                
+                                MDLabel:
+                                    text: "Playlist Download"
+                                    font_style: "Subtitle1"
+                                    theme_text_color: "Custom"
+                                    text_color: "#FFFFFF"
+                        
+                        Widget:
+                            size_hint_y: None
+                            height: "20dp"
+        
+        # ========== TASKS SCREEN ==========
+        MDScreen:
+            name: "tasks"
+            
+            MDBoxLayout:
+                orientation: "vertical"
+                md_bg_color: "#0D0D0D"
+                
                 MDLabel:
-                    text: "HOME TAB"
+                    text: "TASKS TAB"
                     halign: "center"
                     theme_text_color: "Custom"
                     text_color: "#00D2A0"
         
-        # Tasks Screen
-        MDScreen:
-            name: "tasks"
-            MDLabel:
-                text: "TASKS TAB"
-                halign: "center"
-                theme_text_color: "Custom"
-                text_color: "#00D2A0"
-        
-        # Library Screen
+        # ========== LIBRARY SCREEN ==========
         MDScreen:
             name: "library"
-            MDLabel:
-                text: "LIBRARY TAB"
-                halign: "center"
-                theme_text_color: "Custom"
-                text_color: "#00D2A0"
+            
+            MDBoxLayout:
+                orientation: "vertical"
+                md_bg_color: "#0D0D0D"
+                
+                MDLabel:
+                    text: "LIBRARY TAB"
+                    halign: "center"
+                    theme_text_color: "Custom"
+                    text_color: "#00D2A0"
         
-        # Configs Screen
+        # ========== CONFIGS SCREEN ==========
         MDScreen:
             name: "configs"
-            MDLabel:
-                text: "CONFIGS TAB"
-                halign: "center"
-                theme_text_color: "Custom"
-                text_color: "#00D2A0"
+            
+            MDBoxLayout:
+                orientation: "vertical"
+                md_bg_color: "#0D0D0D"
+                
+                MDLabel:
+                    text: "CONFIGS TAB"
+                    halign: "center"
+                    theme_text_color: "Custom"
+                    text_color: "#00D2A0"
     
     # Bottom Navigation
     MDBottomNavigation:
