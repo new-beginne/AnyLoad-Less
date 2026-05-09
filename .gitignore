@@ -51,3 +51,17 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+# Buildozer files
+.buildozer/
+bin/
+*.apk
+
+# Python cache
+__pycache__/
+*.pyc
+
+# AI & Editor files
+.amazonq/
+.qodo/
+.vscode/
+PHASE1_VERIFICATION.md
