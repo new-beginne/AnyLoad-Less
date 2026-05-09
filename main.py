@@ -29,8 +29,8 @@ class AnyLoadApp(MDApp):
         # Start splash screen dot animation
         self.splash_event = Clock.schedule_interval(self.animate_splash_dots, 0.5)
         
-        # Switch to home after 3 seconds
-        Clock.schedule_once(self.switch_to_home, 3)
+        # Switch to home after exactly 3 seconds
+        Clock.schedule_once(self.switch_to_home, 3.0)
     
     def request_android_permissions(self):
         try:
@@ -61,7 +61,7 @@ class AnyLoadApp(MDApp):
             self.stop_spinner()
     
     def start_spinner(self):
-        anim = Animation(spinner_angle=360, duration=1.2)
+        anim = Animation(spinner_angle=360, duration=1.0)
         anim.bind(on_complete=self.loop_spinner)
         anim.start(self)
     
@@ -78,8 +78,10 @@ class AnyLoadApp(MDApp):
         try:
             from kivy.core.clipboard import Clipboard
             url = Clipboard.paste()
-            self.root.ids.url_input.text = url
-            self.root.ids.url_input.cursor = (0, 0)
+            if url:
+                self.root.ids.url_input.text = url
+                # Move cursor to start
+                self.root.ids.url_input.cursor = (0, 0)
         except Exception:
             pass
 

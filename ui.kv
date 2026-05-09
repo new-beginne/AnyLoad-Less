@@ -7,7 +7,7 @@ MDBoxLayout:
     ScreenManager:
         id: screen_manager
         
-        # ========== SPLASH SCREEN ==========
+        # ========== SPLASH SCREEN (LOADING) ==========
         MDScreen:
             name: "loading"
             
@@ -17,10 +17,20 @@ MDBoxLayout:
                 MDBoxLayout:
                     orientation: "vertical"
                     size_hint: None, None
-                    size: "200dp", "100dp"
+                    size: "250dp", "200dp"
                     pos_hint: {"center_x": 0.5, "center_y": 0.5}
-                    spacing: "20dp"
+                    spacing: "30dp"
                     
+                    # Logo Image
+                    Image:
+                        source: "assets/logo.png"
+                        size_hint: None, None
+                        size: "120dp", "120dp"
+                        pos_hint: {"center_x": 0.5}
+                        allow_stretch: True
+                        keep_ratio: True
+                    
+                    # App Name
                     MDLabel:
                         text: "AnyLoad"
                         font_style: "H6"
@@ -28,12 +38,13 @@ MDBoxLayout:
                         text_color: "#00D2A0"
                         halign: "center"
                         size_hint_y: None
-                        height: "40dp"
+                        height: "30dp"
                     
+                    # Animated Dots (Canvas-based, no tofu)
                     MDBoxLayout:
                         orientation: "horizontal"
                         size_hint: None, None
-                        size: "80dp", "30dp"
+                        size: "80dp", "20dp"
                         pos_hint: {"center_x": 0.5}
                         spacing: "10dp"
                         
@@ -75,13 +86,14 @@ MDBoxLayout:
                 orientation: "vertical"
                 md_bg_color: "#0D0D0D"
                 
-                # Top Bar
+                # Top Bar (HORIZONTAL LAYOUT - FIX FOR VERTICAL BUG)
                 MDBoxLayout:
+                    orientation: "horizontal"
                     size_hint_y: None
                     height: "64dp"
                     padding: "16dp", "12dp"
                     md_bg_color: "#0D0D0D"
-                    spacing: "10dp"
+                    spacing: "12dp"
                     
                     MDLabel:
                         text: "ANYLOAD"
@@ -90,8 +102,9 @@ MDBoxLayout:
                         text_color: "#00D2A0"
                         size_hint_x: None
                         width: self.texture_size[0]
+                        adaptive_width: True
                     
-                    # Spinner Animation
+                    # Spinner Animation (Canvas-based, no tofu)
                     FloatLayout:
                         size_hint: None, None
                         size: "40dp", "40dp"
@@ -110,13 +123,13 @@ MDBoxLayout:
                                 Color:
                                     rgba: get_color_from_hex("#00D2A0")
                                 Ellipse:
-                                    pos: self.x + 15, self.y + 30
+                                    pos: self.x + 17, self.y + 30
                                     size: 6, 6
                                 Ellipse:
-                                    pos: self.x + 15, self.y + 15
+                                    pos: self.x + 17, self.y + 17
                                     size: 6, 6
                                 Ellipse:
-                                    pos: self.x + 15, self.y
+                                    pos: self.x + 17, self.y + 4
                                     size: 6, 6
                             canvas.after:
                                 PopMatrix:
@@ -131,13 +144,13 @@ MDBoxLayout:
                         orientation: "vertical"
                         adaptive_height: True
                         padding: "20dp"
-                        spacing: "20dp"
+                        spacing: "24dp"
                         
                         Widget:
                             size_hint_y: None
-                            height: "20dp"
+                            height: "10dp"
                         
-                        # Premium Logo
+                        # Premium "A" Logo Icon
                         MDFloatLayout:
                             size_hint_y: None
                             height: "100dp"
@@ -152,7 +165,7 @@ MDBoxLayout:
                                     RoundedRectangle:
                                         pos: self.pos
                                         size: self.size
-                                        radius: [15]
+                                        radius: [20]
                             
                             MDLabel:
                                 text: "A"
@@ -160,9 +173,11 @@ MDBoxLayout:
                                 theme_text_color: "Custom"
                                 text_color: "#0D0D0D"
                                 halign: "center"
+                                font_size: "40sp"
+                                bold: True
                                 pos_hint: {"center_x": 0.5, "center_y": 0.5}
                         
-                        # URL Input Card
+                        # URL Input Card (Rounded MDCard)
                         MDCard:
                             size_hint_y: None
                             height: "60dp"
@@ -182,9 +197,9 @@ MDBoxLayout:
                                     foreground_color: get_color_from_hex("#FFFFFF")
                                     hint_text_color: get_color_from_hex("#666666")
                                     cursor_color: get_color_from_hex("#00D2A0")
-                                    font_size: "14sp"
+                                    font_size: "15sp"
                                     multiline: False
-                                    padding: 0, 10
+                                    padding: 5, 10
                                 
                                 MDIconButton:
                                     icon: "content-paste"
@@ -193,18 +208,19 @@ MDBoxLayout:
                                     pos_hint: {"center_y": 0.5}
                                     on_release: app.paste_from_clipboard()
                         
-                        # Action Cards
+                        # Action Card 1: Auto Best Quality
                         MDCard:
                             size_hint_y: None
                             height: "70dp"
                             md_bg_color: "#1A1A1A"
                             radius: [15]
                             elevation: 0
+                            ripple_behavior: True
                             
                             MDBoxLayout:
                                 orientation: "horizontal"
                                 padding: "20dp", "15dp"
-                                spacing: "10dp"
+                                spacing: "15dp"
                                 
                                 MDIcon:
                                     icon: "video"
@@ -212,24 +228,28 @@ MDBoxLayout:
                                     text_color: "#00D2A0"
                                     size_hint_x: None
                                     width: "30dp"
+                                    font_size: "28sp"
                                 
                                 MDLabel:
                                     text: "Auto Best Quality"
                                     font_style: "Subtitle1"
                                     theme_text_color: "Custom"
                                     text_color: "#FFFFFF"
+                                    adaptive_width: True
                         
+                        # Action Card 2: Audio Only
                         MDCard:
                             size_hint_y: None
                             height: "70dp"
                             md_bg_color: "#1A1A1A"
                             radius: [15]
                             elevation: 0
+                            ripple_behavior: True
                             
                             MDBoxLayout:
                                 orientation: "horizontal"
                                 padding: "20dp", "15dp"
-                                spacing: "10dp"
+                                spacing: "15dp"
                                 
                                 MDIcon:
                                     icon: "music"
@@ -237,24 +257,28 @@ MDBoxLayout:
                                     text_color: "#00D2A0"
                                     size_hint_x: None
                                     width: "30dp"
+                                    font_size: "28sp"
                                 
                                 MDLabel:
                                     text: "Audio Only (MP3)"
                                     font_style: "Subtitle1"
                                     theme_text_color: "Custom"
                                     text_color: "#FFFFFF"
+                                    adaptive_width: True
                         
+                        # Action Card 3: Playlist Download
                         MDCard:
                             size_hint_y: None
                             height: "70dp"
                             md_bg_color: "#1A1A1A"
                             radius: [15]
                             elevation: 0
+                            ripple_behavior: True
                             
                             MDBoxLayout:
                                 orientation: "horizontal"
                                 padding: "20dp", "15dp"
-                                spacing: "10dp"
+                                spacing: "15dp"
                                 
                                 MDIcon:
                                     icon: "playlist-play"
@@ -262,12 +286,14 @@ MDBoxLayout:
                                     text_color: "#00D2A0"
                                     size_hint_x: None
                                     width: "30dp"
+                                    font_size: "28sp"
                                 
                                 MDLabel:
                                     text: "Playlist Download"
                                     font_style: "Subtitle1"
                                     theme_text_color: "Custom"
                                     text_color: "#FFFFFF"
+                                    adaptive_width: True
                         
                         Widget:
                             size_hint_y: None
@@ -286,6 +312,7 @@ MDBoxLayout:
                     halign: "center"
                     theme_text_color: "Custom"
                     text_color: "#00D2A0"
+                    font_style: "H6"
         
         # ========== LIBRARY SCREEN ==========
         MDScreen:
@@ -300,6 +327,7 @@ MDBoxLayout:
                     halign: "center"
                     theme_text_color: "Custom"
                     text_color: "#00D2A0"
+                    font_style: "H6"
         
         # ========== CONFIGS SCREEN ==========
         MDScreen:
@@ -314,6 +342,7 @@ MDBoxLayout:
                     halign: "center"
                     theme_text_color: "Custom"
                     text_color: "#00D2A0"
+                    font_style: "H6"
     
     # Bottom Navigation
     MDBottomNavigation:
