@@ -1,151 +1,198 @@
-# ui.kv
 #:import get_color_from_hex kivy.utils.get_color_from_hex
+
+<SplashDot@MDLabel>:
+    font_style: "H6"
+    theme_text_color: "Custom"
+    size_hint: None, None
+    size: "15dp", "48dp"
+    halign: "center"
+
+<SpinnerDot@Widget>:
+    size_hint: None, None
+    size: "8dp", "8dp"
+    canvas:
+        Color:
+            rgba: get_color_from_hex("#00D2A0")
+        Ellipse:
+            pos: self.pos
+            size: self.size
 
 MDBoxLayout:
     orientation: "vertical"
-    md_bg_color: "#0D0D0D" # তোর স্ক্রিনশটের ডার্ক ব্যাকগ্রাউন্ড
+    md_bg_color: "#0D0D0D"
     
-    # --- Top App Bar ---
-    MDBoxLayout:
-        size_hint_y: None
-        height: "70dp"
-        padding: ["20dp", "10dp", "20dp", "5dp"]
-        md_bg_color: "#0D0D0D"
-        
-        MDBoxLayout:
-            orientation: "vertical"
-            adaptive_width: True
-            spacing: "-5dp" # টাইটেল আর ডটের দূরত্ব কমানোর জন্য
-            
-            MDLabel:
-                text: "ANYLOAD"
-                font_style: "H6"
-                theme_text_color: "Custom"
-                text_color: "#00D2A0" # প্রিমিয়াম টিল কালার
-                bold: True
-                adaptive_width: True
-                halign: "left"
-            
-            MDLabel:
-                text: app.dot_text # main.py থেকে এনিমেটেড টেক্সট নেবে
-                font_style: "H5"
-                theme_text_color: "Custom"
-                text_color: "#00D2A0"
-                adaptive_width: True
-                halign: "left"
-                bold: True
-        
-        Widget: # এটি টাইটেলকে বামে ঠেলে দেবে
-
-        MDIconButton:
-            icon: "dots-vertical"
-            theme_text_color: "Custom"
-            text_color: "#FFFFFF"
-            pos_hint: {"center_y": .5}
-
-    # --- Screen Manager (মেইন কন্টেন্ট) ---
     ScreenManager:
         id: screen_manager
         
+        # Splash Screen (Initial Loading)
+        MDScreen:
+            name: "loading"
+            
+            MDBoxLayout:
+                orientation: "vertical"
+                md_bg_color: "#0D0D0D"
+                
+                Widget:
+                
+                MDBoxLayout:
+                    orientation: "vertical"
+                    size_hint_y: None
+                    height: "100dp"
+                    spacing: "20dp"
+                    
+                    MDLabel:
+                        text: "AnyLoad"
+                        font_style: "H6"
+                        theme_text_color: "Custom"
+                        text_color: "#00D2A0"
+                        halign: "center"
+                        size_hint_y: None
+                        height: "48dp"
+                    
+                    MDBoxLayout:
+                        size_hint: None, None
+                        size: "80dp", "48dp"
+                        pos_hint: {"center_x": 0.5}
+                        spacing: "5dp"
+                        
+                        SplashDot:
+                            text: "●"
+                            text_color: "#00D2A0" if app.splash_dot_index == 0 else "#333333"
+                        
+                        SplashDot:
+                            text: "●"
+                            text_color: "#00D2A0" if app.splash_dot_index == 1 else "#333333"
+                        
+                        SplashDot:
+                            text: "●"
+                            text_color: "#00D2A0" if app.splash_dot_index == 2 else "#333333"
+                
+                Widget:
+        
+        # Home Screen with Top Bar
         MDScreen:
             name: "home"
-            MDLabel:
-                text: "HOME TAB"
-                halign: "center"
-                theme_text_color: "Secondary"
+            
+            MDBoxLayout:
+                orientation: "vertical"
+                md_bg_color: "#0D0D0D"
+                
+                # Top Bar
+                MDBoxLayout:
+                    size_hint_y: None
+                    height: "64dp"
+                    padding: "16dp", "8dp"
+                    md_bg_color: "#0D0D0D"
+                    
+                    MDLabel:
+                        text: "ANYLOAD"
+                        font_style: "H6"
+                        theme_text_color: "Custom"
+                        text_color: "#00D2A0"
+                        halign: "left"
+                        size_hint_x: None
+                        width: self.texture_size[0]
+                    
+                    # Spinner Animation (Only visible when downloading)
+                    FloatLayout:
+                        size_hint: None, None
+                        size: "50dp", "48dp"
+                        opacity: 1 if app.is_active_download else 0
+                        
+                        SpinnerDot:
+                            pos_hint: {"center_x": 0.5, "center_y": 0.7}
+                            canvas.before:
+                                PushMatrix:
+                                Rotate:
+                                    angle: app.spinner_rotation
+                                    origin: self.center
+                            canvas.after:
+                                PopMatrix:
+                        
+                        SpinnerDot:
+                            pos_hint: {"center_x": 0.5, "center_y": 0.7}
+                            canvas.before:
+                                PushMatrix:
+                                Rotate:
+                                    angle: app.spinner_rotation + 120
+                                    origin: self.center
+                            canvas.after:
+                                PopMatrix:
+                        
+                        SpinnerDot:
+                            pos_hint: {"center_x": 0.5, "center_y": 0.7}
+                            canvas.before:
+                                PushMatrix:
+                                Rotate:
+                                    angle: app.spinner_rotation + 240
+                                    origin: self.center
+                            canvas.after:
+                                PopMatrix:
+                    
+                    Widget:
+                
+                # Main Content
+                MDLabel:
+                    text: "HOME TAB"
+                    halign: "center"
+                    theme_text_color: "Custom"
+                    text_color: "#00D2A0"
         
+        # Tasks Screen
         MDScreen:
             name: "tasks"
             MDLabel:
                 text: "TASKS TAB"
                 halign: "center"
-                theme_text_color: "Secondary"
+                theme_text_color: "Custom"
+                text_color: "#00D2A0"
         
+        # Library Screen
         MDScreen:
             name: "library"
             MDLabel:
                 text: "LIBRARY TAB"
                 halign: "center"
-                theme_text_color: "Secondary"
+                theme_text_color: "Custom"
+                text_color: "#00D2A0"
         
+        # Configs Screen
         MDScreen:
             name: "configs"
             MDLabel:
                 text: "CONFIGS TAB"
                 halign: "center"
-                theme_text_color: "Secondary"
+                theme_text_color: "Custom"
+                text_color: "#00D2A0"
     
-    # --- Bottom Navigation (তোর স্ক্রিনশটের মতো এলাইনমেন্ট) ---
-    MDBoxLayout:
+    # Bottom Navigation
+    MDBottomNavigation:
         size_hint_y: None
-        height: "65dp"
-        md_bg_color: "#121212" # নেভিগেশনের জন্য একটু হালকা ডার্ক
-        padding: ["5dp", 0, "5dp", 0]
-
-        MDGridLayout:
-            cols: 4
-            size_hint_x: 1
-            
-            # Home Tab
-            MDBoxLayout:
-                orientation: "vertical"
-                MDIconButton:
-                    icon: "home-variant" if screen_manager.current == "home" else "home-variant-outline"
-                    theme_text_color: "Custom"
-                    text_color: "#00D2A0" if screen_manager.current == "home" else "#888888"
-                    pos_hint: {"center_x": .5}
-                    on_release: screen_manager.current = "home"
-                MDLabel:
-                    text: "Home"
-                    halign: "center"
-                    font_style: "Caption"
-                    theme_text_color: "Custom"
-                    text_color: "#00D2A0" if screen_manager.current == "home" else "#888888"
-
-            # Tasks Tab
-            MDBoxLayout:
-                orientation: "vertical"
-                MDIconButton:
-                    icon: "download" if screen_manager.current == "tasks" else "download-outline"
-                    theme_text_color: "Custom"
-                    text_color: "#00D2A0" if screen_manager.current == "tasks" else "#888888"
-                    pos_hint: {"center_x": .5}
-                    on_release: screen_manager.current = "tasks"
-                MDLabel:
-                    text: "Tasks"
-                    halign: "center"
-                    font_style: "Caption"
-                    theme_text_color: "Custom"
-                    text_color: "#00D2A0" if screen_manager.current == "tasks" else "#888888"
-
-            # Library Tab
-            MDBoxLayout:
-                orientation: "vertical"
-                MDIconButton:
-                    icon: "folder-play" if screen_manager.current == "library" else "folder-play-outline"
-                    theme_text_color: "Custom"
-                    text_color: "#00D2A0" if screen_manager.current == "library" else "#888888"
-                    pos_hint: {"center_x": .5}
-                    on_release: screen_manager.current = "library"
-                MDLabel:
-                    text: "Library"
-                    halign: "center"
-                    font_style: "Caption"
-                    theme_text_color: "Custom"
-                    text_color: "#00D2A0" if screen_manager.current == "library" else "#888888"
-
-            # Configs Tab
-            MDBoxLayout:
-                orientation: "vertical"
-                MDIconButton:
-                    icon: "cog" if screen_manager.current == "configs" else "cog-outline"
-                    theme_text_color: "Custom"
-                    text_color: "#00D2A0" if screen_manager.current == "configs" else "#888888"
-                    pos_hint: {"center_x": .5}
-                    on_release: screen_manager.current = "configs"
-                MDLabel:
-                    text: "Configs"
-                    halign: "center"
-                    font_style: "Caption"
-                    theme_text_color: "Custom"
-                    text_color: "#00D2A0" if screen_manager.current == "configs" else "#888888"
+        height: "56dp"
+        md_bg_color: "#1A1A1A"
+        text_color_active: "#00D2A0"
+        text_color_normal: "#666666"
+        
+        MDBottomNavigationItem:
+            name: "home"
+            text: "Home"
+            icon: "home"
+            on_tab_press: screen_manager.current = "home"
+        
+        MDBottomNavigationItem:
+            name: "tasks"
+            text: "Tasks"
+            icon: "download"
+            on_tab_press: screen_manager.current = "tasks"
+        
+        MDBottomNavigationItem:
+            name: "library"
+            text: "Library"
+            icon: "folder"
+            on_tab_press: screen_manager.current = "library"
+        
+        MDBottomNavigationItem:
+            name: "configs"
+            text: "Configs"
+            icon: "cog"
+            on_tab_press: screen_manager.current = "configs"
