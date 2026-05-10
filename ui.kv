@@ -58,7 +58,6 @@
 <LibraryCard>:
     orientation: "vertical"
     
-    # Thumbnail Area
     MDFloatLayout:
         size_hint_y: 0.7
         
@@ -68,7 +67,6 @@
             allow_stretch: True
             keep_ratio: True
         
-        # Play Button Overlay
         MDFloatLayout:
             size_hint: None, None
             size: "50dp", "50dp"
@@ -89,7 +87,6 @@
                 font_size: "30sp"
                 pos_hint: {"center_x": 0.55, "center_y": 0.5}
     
-    # Info Area
     MDBoxLayout:
         orientation: "horizontal"
         size_hint_y: 0.3
@@ -110,14 +107,12 @@
             width: "30dp"
             on_release: root.show_menu(self)
 
-MDBoxLayout:
-    orientation: "vertical"
-    md_bg_color: "#0D0D0D"
+MDNavigationLayout:
     
     ScreenManager:
         id: screen_manager
         
-        # ========== SPLASH SCREEN (LOADING) ==========
+        # ========== SPLASH SCREEN ==========
         MDScreen:
             name: "loading"
             
@@ -193,52 +188,59 @@ MDBoxLayout:
                 orientation: "vertical"
                 md_bg_color: "#0D0D0D"
                 
-                # Top Bar
-                MDBoxLayout:
-                    orientation: "horizontal"
-                    size_hint_y: None
-                    height: "64dp"
-                    padding: "16dp", "12dp"
+                # Top App Bar
+                MDTopAppBar:
+                    title: "ANYLOAD"
                     md_bg_color: "#0D0D0D"
-                    spacing: "12dp"
+                    specific_text_color: "#FFFFFF"
+                    elevation: 0
+                    right_action_items: [["menu", lambda x: app.toggle_nav_drawer()]]
+                    pos_hint: {"top": 1}
+                
+                # Animated Dots Below Title
+                MDBoxLayout:
+                    size_hint_y: None
+                    height: "20dp"
+                    padding: "0dp", "0dp"
                     
-                    MDLabel:
-                        text: "ANYLOAD"
-                        font_style: "H6"
-                        theme_text_color: "Custom"
-                        text_color: "#00D2A0"
-                        size_hint_x: None
-                        width: self.texture_size[0]
-                        adaptive_width: True
+                    Widget:
+                        size_hint_x: 0.35
                     
-                    FloatLayout:
+                    MDBoxLayout:
+                        orientation: "horizontal"
                         size_hint: None, None
-                        size: "40dp", "40dp"
-                        opacity: 1 if app.is_active_download else 0
+                        size: "60dp", "15dp"
+                        spacing: "8dp"
                         
                         Widget:
                             size_hint: None, None
-                            size: "40dp", "40dp"
-                            pos_hint: {"center_x": 0.5, "center_y": 0.5}
-                            canvas.before:
-                                PushMatrix:
-                                Rotate:
-                                    angle: app.spinner_angle
-                                    origin: self.center
+                            size: "10dp", "10dp"
                             canvas:
                                 Color:
-                                    rgba: get_color_from_hex("#00D2A0")
+                                    rgba: get_color_from_hex("#00D2A0") if app.is_active_download else get_color_from_hex("#333333")
                                 Ellipse:
-                                    pos: self.x + 17, self.y + 30
-                                    size: 6, 6
+                                    pos: self.pos
+                                    size: self.size
+                        
+                        Widget:
+                            size_hint: None, None
+                            size: "10dp", "10dp"
+                            canvas:
+                                Color:
+                                    rgba: get_color_from_hex("#00D2A0") if app.is_active_download else get_color_from_hex("#333333")
                                 Ellipse:
-                                    pos: self.x + 17, self.y + 17
-                                    size: 6, 6
+                                    pos: self.pos
+                                    size: self.size
+                        
+                        Widget:
+                            size_hint: None, None
+                            size: "10dp", "10dp"
+                            canvas:
+                                Color:
+                                    rgba: get_color_from_hex("#00D2A0") if app.is_active_download else get_color_from_hex("#333333")
                                 Ellipse:
-                                    pos: self.x + 17, self.y + 4
-                                    size: 6, 6
-                            canvas.after:
-                                PopMatrix:
+                                    pos: self.pos
+                                    size: self.size
                     
                     Widget:
                 
@@ -250,47 +252,44 @@ MDBoxLayout:
                         orientation: "vertical"
                         adaptive_height: True
                         padding: "20dp"
-                        spacing: "24dp"
+                        spacing: "30dp"
                         
                         Widget:
                             size_hint_y: None
-                            height: "10dp"
+                            height: "30dp"
                         
-                        # Premium Logo
-                        MDFloatLayout:
+                        # Logo and Title
+                        MDBoxLayout:
+                            orientation: "vertical"
                             size_hint_y: None
-                            height: "100dp"
+                            height: "150dp"
+                            spacing: "15dp"
                             
-                            Widget:
+                            Image:
+                                source: "assets/logo.png"
                                 size_hint: None, None
-                                size: "80dp", "80dp"
-                                pos_hint: {"center_x": 0.5, "center_y": 0.5}
-                                canvas:
-                                    Color:
-                                        rgba: get_color_from_hex("#00D2A0")
-                                    RoundedRectangle:
-                                        pos: self.pos
-                                        size: self.size
-                                        radius: [20]
+                                size: "100dp", "100dp"
+                                pos_hint: {"center_x": 0.5}
+                                allow_stretch: True
+                                keep_ratio: True
                             
                             MDLabel:
-                                text: "A"
+                                text: "ANYLOAD"
                                 font_style: "H6"
                                 theme_text_color: "Custom"
-                                text_color: "#0D0D0D"
+                                text_color: "#00D2A0"
                                 halign: "center"
-                                font_size: "40sp"
-                                bold: True
-                                pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                                size_hint_y: None
+                                height: "30dp"
                         
-                        # URL Input Card
+                        # URL Input (Pill Shape)
                         MDCard:
                             size_hint_y: None
-                            height: "60dp"
-                            md_bg_color: "#1A1A1A"
-                            radius: [15]
+                            height: "55dp"
+                            md_bg_color: "#2A2A2A"
+                            radius: [30]
                             elevation: 0
-                            padding: "15dp", "10dp"
+                            padding: "20dp", "10dp"
                             
                             MDBoxLayout:
                                 orientation: "horizontal"
@@ -298,7 +297,7 @@ MDBoxLayout:
                                 
                                 TextInput:
                                     id: url_input
-                                    hint_text: "Paste URL here..."
+                                    hint_text: "Paste video link here..."
                                     background_color: 0, 0, 0, 0
                                     foreground_color: get_color_from_hex("#FFFFFF")
                                     hint_text_color: get_color_from_hex("#666666")
@@ -314,95 +313,42 @@ MDBoxLayout:
                                     pos_hint: {"center_y": 0.5}
                                     on_release: app.paste_from_clipboard()
                         
-                        # Action Card 1: Auto Best Quality
-                        MDCard:
+                        # Teal Pill Buttons
+                        MDRaisedButton:
+                            text: "  Auto Best Quality"
+                            icon: "play-box-outline"
+                            md_bg_color: "#00D2A0"
+                            theme_text_color: "Custom"
+                            text_color: "#0D0D0D"
+                            font_style: "Subtitle1"
                             size_hint_y: None
-                            height: "70dp"
-                            md_bg_color: "#1A1A1A"
-                            radius: [15]
-                            elevation: 0
-                            ripple_behavior: True
+                            height: "55dp"
+                            radius: [30]
                             on_release: app.download_video()
-                            
-                            MDBoxLayout:
-                                orientation: "horizontal"
-                                padding: "20dp", "15dp"
-                                spacing: "15dp"
-                                
-                                MDIcon:
-                                    icon: "lightning-bolt"
-                                    theme_text_color: "Custom"
-                                    text_color: "#00D2A0"
-                                    size_hint_x: None
-                                    width: "30dp"
-                                    font_size: "28sp"
-                                
-                                MDLabel:
-                                    text: "Auto Best Quality"
-                                    font_style: "Subtitle1"
-                                    theme_text_color: "Custom"
-                                    text_color: "#FFFFFF"
-                                    adaptive_width: True
                         
-                        # Action Card 2: Audio Only
-                        MDCard:
+                        MDRaisedButton:
+                            text: "  Audio Only"
+                            icon: "music-note"
+                            md_bg_color: "#00D2A0"
+                            theme_text_color: "Custom"
+                            text_color: "#0D0D0D"
+                            font_style: "Subtitle1"
                             size_hint_y: None
-                            height: "70dp"
-                            md_bg_color: "#1A1A1A"
-                            radius: [15]
-                            elevation: 0
-                            ripple_behavior: True
+                            height: "55dp"
+                            radius: [30]
                             on_release: app.download_audio()
-                            
-                            MDBoxLayout:
-                                orientation: "horizontal"
-                                padding: "20dp", "15dp"
-                                spacing: "15dp"
-                                
-                                MDIcon:
-                                    icon: "music-note"
-                                    theme_text_color: "Custom"
-                                    text_color: "#00D2A0"
-                                    size_hint_x: None
-                                    width: "30dp"
-                                    font_size: "28sp"
-                                
-                                MDLabel:
-                                    text: "Audio Only (MP3)"
-                                    font_style: "Subtitle1"
-                                    theme_text_color: "Custom"
-                                    text_color: "#FFFFFF"
-                                    adaptive_width: True
                         
-                        # Action Card 3: Playlist Download
-                        MDCard:
+                        MDRaisedButton:
+                            text: "  Playlist Download"
+                            icon: "playlist-play"
+                            md_bg_color: "#00D2A0"
+                            theme_text_color: "Custom"
+                            text_color: "#0D0D0D"
+                            font_style: "Subtitle1"
                             size_hint_y: None
-                            height: "70dp"
-                            md_bg_color: "#1A1A1A"
-                            radius: [15]
-                            elevation: 0
-                            ripple_behavior: True
+                            height: "55dp"
+                            radius: [30]
                             on_release: app.download_playlist()
-                            
-                            MDBoxLayout:
-                                orientation: "horizontal"
-                                padding: "20dp", "15dp"
-                                spacing: "15dp"
-                                
-                                MDIcon:
-                                    icon: "playlist-play"
-                                    theme_text_color: "Custom"
-                                    text_color: "#00D2A0"
-                                    size_hint_x: None
-                                    width: "30dp"
-                                    font_size: "28sp"
-                                
-                                MDLabel:
-                                    text: "Playlist Download"
-                                    font_style: "Subtitle1"
-                                    theme_text_color: "Custom"
-                                    text_color: "#FFFFFF"
-                                    adaptive_width: True
                         
                         Widget:
                             size_hint_y: None
@@ -416,7 +362,6 @@ MDBoxLayout:
                 orientation: "vertical"
                 md_bg_color: "#0D0D0D"
                 
-                # Header
                 MDBoxLayout:
                     orientation: "horizontal"
                     size_hint_y: None
@@ -429,7 +374,6 @@ MDBoxLayout:
                         theme_text_color: "Custom"
                         text_color: "#00D2A0"
                 
-                # Task List
                 ScrollView:
                     do_scroll_x: False
                     
@@ -448,7 +392,6 @@ MDBoxLayout:
                 orientation: "vertical"
                 md_bg_color: "#0D0D0D"
                 
-                # Header with Filter Buttons
                 MDBoxLayout:
                     orientation: "vertical"
                     size_hint_y: None
@@ -491,7 +434,6 @@ MDBoxLayout:
                             text_color: "#0D0D0D" if app.library_filter == "playlists" else "#FFFFFF"
                             on_release: app.filter_library("playlists")
                 
-                # Library Grid
                 ScrollView:
                     do_scroll_x: False
                     
@@ -523,7 +465,6 @@ MDBoxLayout:
                             size_hint_y: None
                             height: "20dp"
                         
-                        # App Header
                         MDBoxLayout:
                             orientation: "vertical"
                             size_hint_y: None
@@ -556,7 +497,6 @@ MDBoxLayout:
                                 size_hint_y: None
                                 height: "20dp"
                         
-                        # Settings Section
                         MDCard:
                             size_hint_y: None
                             height: "280dp"
@@ -569,7 +509,6 @@ MDBoxLayout:
                                 orientation: "vertical"
                                 spacing: "25dp"
                                 
-                                # Max Concurrent Downloads
                                 MDBoxLayout:
                                     orientation: "vertical"
                                     size_hint_y: None
@@ -602,7 +541,6 @@ MDBoxLayout:
                                         color: get_color_from_hex("#00D2A0")
                                         on_value: app.max_downloads = self.value
                                 
-                                # Wi-Fi Only Toggle
                                 MDBoxLayout:
                                     orientation: "horizontal"
                                     size_hint_y: None
@@ -620,7 +558,6 @@ MDBoxLayout:
                                         on_active: app.wifi_only = self.active
                                         pos_hint: {"center_y": 0.5}
                                 
-                                # Download Path
                                 MDBoxLayout:
                                     orientation: "vertical"
                                     size_hint_y: None
@@ -656,34 +593,80 @@ MDBoxLayout:
                             size_hint_y: None
                             height: "20dp"
     
-    # Bottom Navigation
-    MDBottomNavigation:
-        size_hint_y: None
-        height: "56dp"
+    # Right-Side Navigation Drawer
+    MDNavigationDrawer:
+        id: nav_drawer
+        anchor: "right"
         md_bg_color: "#1A1A1A"
-        text_color_active: "#00D2A0"
-        text_color_normal: "#666666"
         
-        MDBottomNavigationItem:
-            name: "home"
-            text: "Home"
-            icon: "home"
-            on_tab_press: screen_manager.current = "home"
-        
-        MDBottomNavigationItem:
-            name: "tasks"
-            text: "Tasks"
-            icon: "download"
-            on_tab_press: screen_manager.current = "tasks"
-        
-        MDBottomNavigationItem:
-            name: "library"
-            text: "Library"
-            icon: "folder"
-            on_tab_press: screen_manager.current = "library"
-        
-        MDBottomNavigationItem:
-            name: "configs"
-            text: "Configs"
-            icon: "cog"
-            on_tab_press: screen_manager.current = "configs"
+        MDBoxLayout:
+            orientation: "vertical"
+            padding: "20dp"
+            spacing: "20dp"
+            
+            MDLabel:
+                text: "Menu"
+                font_style: "H6"
+                theme_text_color: "Custom"
+                text_color: "#00D2A0"
+                size_hint_y: None
+                height: "40dp"
+            
+            MDRaisedButton:
+                text: "About AnyLoad"
+                md_bg_color: "#2A2A2A"
+                theme_text_color: "Custom"
+                text_color: "#FFFFFF"
+                size_hint_y: None
+                height: "50dp"
+                on_release: app.show_about()
+            
+            MDRaisedButton:
+                text: "Privacy Policy"
+                md_bg_color: "#2A2A2A"
+                theme_text_color: "Custom"
+                text_color: "#FFFFFF"
+                size_hint_y: None
+                height: "50dp"
+                on_release: app.show_privacy()
+            
+            MDRaisedButton:
+                text: "App Version (v1.1)"
+                md_bg_color: "#2A2A2A"
+                theme_text_color: "Custom"
+                text_color: "#FFFFFF"
+                size_hint_y: None
+                height: "50dp"
+                on_release: app.show_version()
+            
+            Widget:
+
+# Bottom Navigation
+MDBottomNavigation:
+    md_bg_color: "#1A1A1A"
+    text_color_active: "#00D2A0"
+    text_color_normal: "#666666"
+    
+    MDBottomNavigationItem:
+        name: "home"
+        text: "Home"
+        icon: "home"
+        on_tab_press: screen_manager.current = "home"
+    
+    MDBottomNavigationItem:
+        name: "tasks"
+        text: "Tasks"
+        icon: "download"
+        on_tab_press: screen_manager.current = "tasks"
+    
+    MDBottomNavigationItem:
+        name: "library"
+        text: "Library"
+        icon: "video"
+        on_tab_press: screen_manager.current = "library"
+    
+    MDBottomNavigationItem:
+        name: "configs"
+        text: "Configs"
+        icon: "cog"
+        on_tab_press: screen_manager.current = "configs"
