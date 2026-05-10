@@ -9,6 +9,7 @@ from kivy.utils import platform
 from kivymd.uix.card import MDCard
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.tab import MDTabsBase
+from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.toast import toast
 import threading
 import queue
