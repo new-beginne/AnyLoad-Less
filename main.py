@@ -391,8 +391,9 @@ class AnyLoadApp(MDApp):
         self.root.ids.screen_manager.current = "tasks"
     
     def animate_button_press(self, button):
-        anim = Animation(scale_x=0.95, scale_y=0.95, duration=0.1)
-        anim += Animation(scale_x=1.0, scale_y=1.0, duration=0.1)
+        # MDRaisedButton doesn't support scale_x/scale_y, use opacity instead
+        anim = Animation(opacity=0.7, duration=0.1)
+        anim += Animation(opacity=1.0, duration=0.1)
         anim.start(button)
     
     def add_mock_library(self, dt):
@@ -418,15 +419,25 @@ class AnyLoadApp(MDApp):
         self.download_manager.max_concurrent = int(value)
     
     def show_menu(self):
-        menu_items = [
-            {"text": "About AnyLoad", "viewclass": "OneLineListItem", "on_release": lambda: self.menu_action("about")},
-            {"text": "Privacy Policy", "viewclass": "OneLineListItem", "on_release": lambda: self.menu_action("privacy")},
-            {"text": "App Version (v1.1)", "viewclass": "OneLineListItem", "on_release": lambda: self.menu_action("version")}
-        ]
-        if not hasattr(self, 'menu'):
-            self.menu = MDDropdownMenu(items=menu_items, width_mult=4)
-        self.menu.items = menu_items
-        self.menu.open()
+        try:
+            menu_button = self.root.ids.get('menu_button')
+            if not menu_button:
+                toast("Menu coming soon")
+                return
+            
+            menu_items = [
+                {"text": "About AnyLoad", "viewclass": "OneLineListItem", "on_release": lambda: self.menu_action("about")},
+                {"text": "Privacy Policy", "viewclass": "OneLineListItem", "on_release": lambda: self.menu_action("privacy")},
+                {"text": "App Version (v1.1)", "viewclass": "OneLineListItem", "on_release": lambda: self.menu_action("version")}
+            ]
+            if not hasattr(self, 'menu'):
+                self.menu = MDDropdownMenu(caller=menu_button, items=menu_items, width_mult=4)
+            else:
+                self.menu.caller = menu_button
+                self.menu.items = menu_items
+            self.menu.open()
+        except Exception as e:
+            toast("Menu unavailable")
     
     def menu_action(self, action):
         if hasattr(self, 'menu'):
