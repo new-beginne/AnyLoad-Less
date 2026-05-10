@@ -9,19 +9,235 @@ from kivy.utils import platform
 from kivymd.uix.card import MDCard
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.menu import MDDropdownMenu
+from kivymd.toast import toast
+import threading
+import queue
+import time
 
-class ActionCard(MDCard):
-    icon = StringProperty("")
-    title = StringProperty("")
+class DownloadManager:
+    def __init__(self, app):
+        self.app = app
+        self.active_downloads = {}
+        self.download_queue = queue.Queue()
+        self.max_concurrent = 3
+        self.running = True
+        
+        # Start queue processor thread
+        self.queue_thread = threading.Thread(target=self.process_queue, daemon=True)
+        self.queue_thread.start()
     
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.ripple_behavior = True
-        self.md_bg_color = "#1A1A1A"
-        self.radius = [15]
-        self.elevation = 0
-        self.size_hint_y = None
-        self.height = "70dp"
+    def process_queue(self):
+        while self.running:
+            try:
+                if len(self.active_downloads) < self.max_concurrent:
+                    if not self.download_queue.empty():
+                        download_info = self.download_queue.get()
+                        self.start_download(download_info)
+                time.sleep(0.5)
+            except Exception as e:
+                print(f"Queue error: {e}")
+    
+    def add_to_queue(self, url, download_type="video"):
+        download_info = {
+            'url': url,
+            'type': download_type,
+            'id': f"dl_{int(time.time() * 1000)}"
+        }
+        self.download_queue.put(download_info)
+        Clock.schedule_once(lambda dt: toast("Added to download queue"), 0)
+    
+    def start_download(self, download_info):
+        download_id = download_info['id']
+        
+        # Create task card
+        task_card = TaskCard(
+            filename="Fetching info...",
+            progress=0,
+            speed="0 KB/s",
+            eta="--:--",
+            download_id=download_id
+        )
+        
+        Clock.schedule_once(lambda dt: self.app.root.ids.task_container.add_widget(task_card), 0)
+        
+        # Start download thread
+        download_thread = threading.Thread(
+            target=self.download_worker,
+            args=(download_info, task_card),
+            daemon=True
+        )
+        
+        self.active_downloads[download_id] = {
+            'thread': download_thread,
+            'card': task_card,
+            'paused': False,
+            'cancelled': False
+        }
+        
+        download_thread.start()
+        
+        # Update spinner
+        Clock.schedule_once(lambda dt: setattr(self.app, 'is_active_download', True), 0)
+    
+    def download_worker(self, download_info, task_card):
+        try:
+            # Lazy import yt-dlp
+            import yt_dlp
+            
+            download_id = download_info['id']
+            url = download_info['url']
+            download_type = download_info['type']
+            
+            # Download path
+            if platform == "android":
+                from android.storage import primary_external_storage_path
+                download_path = os.path.join(primary_external_storage_path(), "Download", "AnyLoad")
+            else:
+                download_path = os.path.expanduser("~/Downloads/AnyLoad")
+            
+            os.makedirs(download_path, exist_ok=True)
+            
+            # yt-dlp options
+            ydl_opts = {
+                'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
+                'progress_hooks': [lambda d: self.progress_hook(d, task_card, download_id)],
+                'quiet': True,
+                'no_warnings': True
+            }
+            
+            # Configure based on download type
+            if download_type == "audio":
+                ydl_opts.update({
+                    'format': 'bestaudio/best',
+                    'postprocessors': [{
+                        'key': 'FFmpegExtractAudio',
+                        'preferredcodec': 'mp3',
+                        'preferredquality': '192',
+                    }]
+                })
+            elif download_type == "playlist":
+                ydl_opts['noplaylist'] = False
+            else:  # video
+                ydl_opts['format'] = 'best'
+            
+            # Download
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                filename = ydl.prepare_filename(info)
+                
+                # Update filename
+                Clock.schedule_once(
+                    lambda dt: setattr(task_card, 'filename', info.get('title', 'Unknown')),
+                    0
+                )
+                
+                # Check if cancelled
+                if self.active_downloads.get(download_id, {}).get('cancelled'):
+                    return
+                
+                # Start download
+                ydl.download([url])
+                
+                # Download complete
+                Clock.schedule_once(lambda dt: self.download_complete(download_id, task_card, filename), 0)
+        
+        except Exception as e:
+            error_msg = str(e)
+            Clock.schedule_once(lambda dt: self.download_failed(download_id, task_card, error_msg), 0)
+    
+    def progress_hook(self, d, task_card, download_id):
+        if d['status'] == 'downloading':
+            # Check if cancelled
+            if self.active_downloads.get(download_id, {}).get('cancelled'):
+                raise Exception("Download cancelled")
+            
+            # Check if paused
+            while self.active_downloads.get(download_id, {}).get('paused'):
+                time.sleep(0.5)
+                if self.active_downloads.get(download_id, {}).get('cancelled'):
+                    raise Exception("Download cancelled")
+            
+            # Update progress
+            try:
+                total = d.get('total_bytes') or d.get('total_bytes_estimate', 0)
+                downloaded = d.get('downloaded_bytes', 0)
+                
+                if total > 0:
+                    progress = (downloaded / total) * 100
+                    speed = d.get('speed', 0)
+                    eta = d.get('eta', 0)
+                    
+                    # Format speed
+                    if speed:
+                        if speed > 1024 * 1024:
+                            speed_str = f"{speed / (1024 * 1024):.1f} MB/s"
+                        else:
+                            speed_str = f"{speed / 1024:.1f} KB/s"
+                    else:
+                        speed_str = "0 KB/s"
+                    
+                    # Format ETA
+                    if eta:
+                        mins = int(eta // 60)
+                        secs = int(eta % 60)
+                        eta_str = f"{mins:02d}:{secs:02d}"
+                    else:
+                        eta_str = "--:--"
+                    
+                    # Update UI
+                    Clock.schedule_once(lambda dt: setattr(task_card, 'progress', progress), 0)
+                    Clock.schedule_once(lambda dt: setattr(task_card, 'speed', speed_str), 0)
+                    Clock.schedule_once(lambda dt: setattr(task_card, 'eta', eta_str), 0)
+            except Exception:
+                pass
+    
+    def download_complete(self, download_id, task_card, filename):
+        # Remove from active downloads
+        if download_id in self.active_downloads:
+            del self.active_downloads[download_id]
+        
+        # Remove task card
+        if task_card.parent:
+            task_card.parent.remove_widget(task_card)
+        
+        # Update spinner
+        if len(self.active_downloads) == 0:
+            self.app.is_active_download = False
+        
+        # Show toast
+        toast("Download complete!")
+        
+        # Add to library (mock)
+        print(f"Added to library: {filename}")
+    
+    def download_failed(self, download_id, task_card, error):
+        # Remove from active downloads
+        if download_id in self.active_downloads:
+            del self.active_downloads[download_id]
+        
+        # Update card to show error
+        task_card.speed = "Failed"
+        task_card.eta = ""
+        
+        # Update spinner
+        if len(self.active_downloads) == 0:
+            self.app.is_active_download = False
+        
+        # Show toast
+        toast(f"Download failed: {error[:50]}")
+    
+    def pause_download(self, download_id):
+        if download_id in self.active_downloads:
+            self.active_downloads[download_id]['paused'] = True
+    
+    def resume_download(self, download_id):
+        if download_id in self.active_downloads:
+            self.active_downloads[download_id]['paused'] = False
+    
+    def cancel_download(self, download_id):
+        if download_id in self.active_downloads:
+            self.active_downloads[download_id]['cancelled'] = True
+            del self.active_downloads[download_id]
 
 class TaskCard(MDCard):
     filename = StringProperty("video.mp4")
@@ -29,6 +245,7 @@ class TaskCard(MDCard):
     speed = StringProperty("0 MB/s")
     eta = StringProperty("00:00")
     is_paused = BooleanProperty(False)
+    download_id = StringProperty("")
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -41,9 +258,15 @@ class TaskCard(MDCard):
     
     def toggle_pause(self):
         self.is_paused = not self.is_paused
+        app = MDApp.get_running_app()
+        if self.is_paused:
+            app.download_manager.pause_download(self.download_id)
+        else:
+            app.download_manager.resume_download(self.download_id)
     
     def cancel_download(self):
-        # Remove this card from parent
+        app = MDApp.get_running_app()
+        app.download_manager.cancel_download(self.download_id)
         if self.parent:
             self.parent.remove_widget(self)
 
@@ -94,23 +317,24 @@ class LibraryCard(MDCard):
     def play_file(self):
         if self.menu:
             self.menu.dismiss()
-        print(f"Playing: {self.filename}")
+        toast(f"Playing: {self.filename}")
     
     def show_details(self):
         if self.menu:
             self.menu.dismiss()
-        print(f"Details: {self.filename}")
+        toast(f"Details: {self.filename}")
     
     def rename_file(self):
         if self.menu:
             self.menu.dismiss()
-        print(f"Rename: {self.filename}")
+        toast(f"Rename: {self.filename}")
     
     def delete_file(self):
         if self.menu:
             self.menu.dismiss()
         if self.parent:
             self.parent.remove_widget(self)
+        toast("File deleted")
 
 class AnyLoadApp(MDApp):
     is_active_download = BooleanProperty(False)
@@ -125,6 +349,10 @@ class AnyLoadApp(MDApp):
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Teal"
         self.title = "AnyLoad"
+        
+        # Initialize download manager
+        self.download_manager = DownloadManager(self)
+        
         return Builder.load_file("ui.kv")
     
     def on_pause(self):
@@ -141,8 +369,8 @@ class AnyLoadApp(MDApp):
         # Switch to home after exactly 3 seconds
         Clock.schedule_once(self.switch_to_home, 3.0)
         
-        # Add mock data after splash
-        Clock.schedule_once(self.add_mock_data, 3.5)
+        # Add mock library data after splash
+        Clock.schedule_once(self.add_mock_library, 3.5)
     
     def request_android_permissions(self):
         try:
@@ -196,34 +424,31 @@ class AnyLoadApp(MDApp):
         except Exception:
             pass
     
-    def add_mock_data(self, dt):
-        # Add mock task cards
-        task_container = self.root.ids.task_container
-        
-        task1 = TaskCard(
-            filename="Amazing Video Tutorial.mp4",
-            progress=74,
-            speed="1.7 MB/s",
-            eta="00:45"
-        )
-        task_container.add_widget(task1)
-        
-        task2 = TaskCard(
-            filename="Podcast Episode 42.mp3",
-            progress=32,
-            speed="850 KB/s",
-            eta="02:15"
-        )
-        task_container.add_widget(task2)
-        
-        task3 = TaskCard(
-            filename="Documentary Series S01E03.mp4",
-            progress=91,
-            speed="2.3 MB/s",
-            eta="00:12"
-        )
-        task_container.add_widget(task3)
-        
+    def download_video(self):
+        url = self.root.ids.url_input.text.strip()
+        if url:
+            self.download_manager.add_to_queue(url, "video")
+            self.root.ids.url_input.text = ""
+        else:
+            toast("Please enter a URL")
+    
+    def download_audio(self):
+        url = self.root.ids.url_input.text.strip()
+        if url:
+            self.download_manager.add_to_queue(url, "audio")
+            self.root.ids.url_input.text = ""
+        else:
+            toast("Please enter a URL")
+    
+    def download_playlist(self):
+        url = self.root.ids.url_input.text.strip()
+        if url:
+            self.download_manager.add_to_queue(url, "playlist")
+            self.root.ids.url_input.text = ""
+        else:
+            toast("Please enter a URL")
+    
+    def add_mock_library(self, dt):
         # Add mock library cards
         library_container = self.root.ids.library_container
         
@@ -253,10 +478,13 @@ class AnyLoadApp(MDApp):
     
     def filter_library(self, filter_type):
         self.library_filter = filter_type
-        print(f"Library filtered to: {filter_type}")
+        toast(f"Showing {filter_type}")
     
     def change_download_path(self):
-        print("Opening file picker for download path...")
+        toast("File picker coming in Phase 5")
+    
+    def on_max_downloads(self, instance, value):
+        self.download_manager.max_concurrent = int(value)
 
 if __name__ == "__main__":
     AnyLoadApp().run()
