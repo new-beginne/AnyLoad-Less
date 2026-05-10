@@ -3,17 +3,16 @@ import os; os.environ['KIVY_GRAPHICS'] = 'sdl2'
 from kivymd.app import MDApp
 from kivy.lang import Builder
 from kivy.clock import Clock
-from kivy.properties import BooleanProperty, NumericProperty, StringProperty, ObjectProperty
+from kivy.properties import BooleanProperty, NumericProperty, StringProperty
 from kivy.animation import Animation
 from kivy.utils import platform
 from kivymd.uix.card import MDCard
-from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.toast import toast
-from kivymd.uix.navigationdrawer import MDNavigationDrawer, MDNavigationDrawerItem
 import threading
 import queue
 import time
+import re
 
 class DownloadManager:
     def __init__(self, app):
@@ -293,6 +292,7 @@ class AnyLoadApp(MDApp):
     max_downloads = NumericProperty(3)
     wifi_only = BooleanProperty(False)
     download_path = StringProperty("/storage/emulated/0/Download/AnyLoad")
+    url_error_visible = BooleanProperty(False)
     
     def build(self):
         self.theme_cls.theme_style = "Dark"
@@ -356,39 +356,44 @@ class AnyLoadApp(MDApp):
         Animation.cancel_all(self, 'spinner_angle')
         self.spinner_angle = 0
     
-    def paste_from_clipboard(self):
+    def handle_paste(self):
         try:
             from kivy.core.clipboard import Clipboard
             url = Clipboard.paste()
             if url:
                 self.root.ids.url_input.text = url
                 self.root.ids.url_input.cursor = (0, 0)
+                self.url_error_visible = False
         except Exception:
             pass
     
-    def download_video(self):
-        url = self.root.ids.url_input.text.strip()
-        if url:
-            self.download_manager.add_to_queue(url, "video")
-            self.root.ids.url_input.text = ""
-        else:
-            toast("Please enter a URL")
+    def validate_url(self, url):
+        if not url or not url.strip():
+            return False
+        url = url.strip()
+        if 'http' not in url.lower():
+            return False
+        return True
     
-    def download_audio(self):
+    def handle_download(self, download_type):
         url = self.root.ids.url_input.text.strip()
-        if url:
-            self.download_manager.add_to_queue(url, "audio")
-            self.root.ids.url_input.text = ""
-        else:
-            toast("Please enter a URL")
+        
+        if not self.validate_url(url):
+            self.url_error_visible = True
+            toast("Please paste a valid URL first!")
+            return
+        
+        self.url_error_visible = False
+        self.download_manager.add_to_queue(url, download_type)
+        self.root.ids.url_input.text = ""
+        
+        # Switch to tasks tab
+        self.root.ids.screen_manager.current = "tasks"
     
-    def download_playlist(self):
-        url = self.root.ids.url_input.text.strip()
-        if url:
-            self.download_manager.add_to_queue(url, "playlist")
-            self.root.ids.url_input.text = ""
-        else:
-            toast("Please enter a URL")
+    def animate_button_press(self, button):
+        anim = Animation(scale_x=0.95, scale_y=0.95, duration=0.1)
+        anim += Animation(scale_x=1.0, scale_y=1.0, duration=0.1)
+        anim.start(button)
     
     def add_mock_library(self, dt):
         library_container = self.root.ids.library_container
@@ -419,10 +424,7 @@ class AnyLoadApp(MDApp):
             {"text": "App Version (v1.1)", "viewclass": "OneLineListItem", "on_release": lambda: self.menu_action("version")}
         ]
         if not hasattr(self, 'menu'):
-            self.menu = MDDropdownMenu(
-                items=menu_items,
-                width_mult=4
-            )
+            self.menu = MDDropdownMenu(items=menu_items, width_mult=4)
         self.menu.items = menu_items
         self.menu.open()
     
@@ -431,7 +433,7 @@ class AnyLoadApp(MDApp):
             self.menu.dismiss()
         
         if action == "about":
-            toast("AnyLoad - Download Anything. Anytime.")
+            toast("AnyLoad — Download Anything. Anytime.")
         elif action == "privacy":
             toast("Privacy Policy")
         elif action == "version":
