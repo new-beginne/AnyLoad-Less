@@ -16,6 +16,8 @@ import queue
 import time
 import re
 
+from db import db
+
 class DownloadManager:
     def __init__(self, app):
         self.app = app
@@ -316,9 +318,12 @@ class AnyLoadApp(MDApp):
         if platform == "android":
             self.request_android_permissions()
         
+        # Load settings from database
+        self.load_settings_from_db()
+        
         self.splash_event = Clock.schedule_interval(self.animate_splash_dots, 0.5)
         Clock.schedule_once(self.switch_to_home, 3.0)
-        Clock.schedule_once(self.add_mock_library, 3.5)
+        Clock.schedule_once(self.load_library_from_db, 3.5)
         Clock.schedule_once(self.start_topbar_animation, 3.5)
     
     def request_android_permissions(self):
@@ -409,22 +414,103 @@ class AnyLoadApp(MDApp):
         anim += Animation(opacity=1.0, duration=0.1)
         anim.start(button)
     
-    def add_mock_library(self, dt):
+    def load_settings_from_db(self):
+        """Load settings from database and update UI"""
+        try:
+            queue_limit = db.get_setting("queue_limit")
+            wifi_only = db.get_setting("wifi_only")
+            download_path = db.get_setting("download_path")
+            
+            if queue_limit:
+                self.max_downloads = int(queue_limit)
+            if wifi_only:
+                self.wifi_only = wifi_only == "True"
+            if download_path:
+                self.download_path = download_path
+        except Exception as e:
+            print(f"Error loading settings: {e}")
+    
+    def change_queue_limit(self, value):
+        """Update queue limit in database and app"""
+        self.max_downloads = int(value)
+        db.update_setting("queue_limit", int(value))
+        toast(f"Queue limit set to {int(value)}")
+    
+    def toggle_wifi(self, active):
+        """Toggle Wi-Fi only mode"""
+        self.wifi_only = active
+        db.update_setting("wifi_only", str(active))
+        status = "enabled" if active else "disabled"
+        toast(f"Wi-Fi only mode {status}")
+    
+    def set_download_path(self, path):
+        """Update download path in database"""
+        self.download_path = path
+        db.update_setting("download_path", path)
+        toast(f"Download path updated")
+    
+    def load_library_from_db(self, dt=None):
+        """Load library items from database"""
         try:
             videos_container = self.root.ids.library_tabs.ids.videos_container
             audio_container = self.root.ids.library_tabs.ids.audio_container
+            playlists_container = self.root.ids.library_tabs.ids.playlists_container
             
-            # Add video cards
-            for name in ["Tutorial Video.mp4", "Documentary.mp4", "Movie Clip.mp4"]:
-                card = LibraryCard(filename=name, file_type="video")
-                videos_container.add_widget(card)
+            # Clear existing widgets
+            videos_container.clear_widgets()
+            audio_container.clear_widgets()
+            playlists_container.clear_widgets()
             
-            # Add audio cards
-            for name in ["Favorite Song.mp3", "Podcast Episode.mp3"]:
-                card = LibraryCard(filename=name, file_type="audio")
-                audio_container.add_widget(card)
+            # Load videos
+            videos = db.get_library("video")
+            if videos:
+                for item in videos:
+                    card = LibraryCard(filename=item['title'], file_type="video")
+                    videos_container.add_widget(card)
+            else:
+                from kivymd.uix.label import MDLabel
+                label = MDLabel(
+                    text="No videos found",
+                    halign="center",
+                    theme_text_color="Custom",
+                    text_color="#666666",
+                    size_hint_y=None,
+                    height="50dp"
+                )
+                videos_container.add_widget(label)
+            
+            # Load audio
+            audios = db.get_library("audio")
+            if audios:
+                for item in audios:
+                    card = LibraryCard(filename=item['title'], file_type="audio")
+                    audio_container.add_widget(card)
+            else:
+                from kivymd.uix.label import MDLabel
+                label = MDLabel(
+                    text="No audio files found",
+                    halign="center",
+                    theme_text_color="Custom",
+                    text_color="#666666",
+                    size_hint_y=None,
+                    height="50dp"
+                )
+                audio_container.add_widget(label)
+            
+            # Playlists placeholder
+            from kivymd.uix.label import MDLabel
+            label = MDLabel(
+                text="No playlists found",
+                halign="center",
+                theme_text_color="Custom",
+                text_color="#666666",
+                size_hint_y=None,
+                height="50dp"
+            )
+            playlists_container.add_widget(label)
+            
         except Exception as e:
-            print(f"Mock library error: {e}")
+            print(f"Error loading library: {e}")
     
     def filter_library(self, filter_type):
         self.library_filter = filter_type
@@ -437,7 +523,9 @@ class AnyLoadApp(MDApp):
         toast(f"Showing {filter_type}")
     
     def change_download_path(self):
+        # For now, just show toast. File picker in Phase 5
         toast("File picker coming in Phase 5")
+        # Example: self.set_download_path("/new/path")
     
     def on_max_downloads(self, instance, value):
         self.download_manager.max_concurrent = int(value)

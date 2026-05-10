@@ -851,7 +851,7 @@ MDNavigationLayout:
                                         max: 5
                                         value: app.max_downloads
                                         color: get_color_from_hex("#00D2A0")
-                                        on_value: app.max_downloads = self.value
+                                        on_value: app.change_queue_limit(self.value)
                                 
                                 MDBoxLayout:
                                     orientation: "horizontal"
@@ -867,7 +867,7 @@ MDNavigationLayout:
                                     MDSwitch:
                                         active: app.wifi_only
                                         thumb_color_active: get_color_from_hex("#00D2A0")
-                                        on_active: app.wifi_only = self.active
+                                        on_active: app.toggle_wifi(self.active)
                                         pos_hint: {"center_y": 0.5}
                                 
                                 MDBoxLayout:
