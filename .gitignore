@@ -61,7 +61,7 @@ __pycache__/
 *.pyc
 
 # AI & Editor files
-.amazonq/
+.amazonq/ghh.md
 .qodo/
 .vscode/
 PHASE1_VERIFICATION.md
