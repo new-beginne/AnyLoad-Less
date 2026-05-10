@@ -189,9 +189,9 @@ MDNavigationLayout:
                     orientation: "horizontal"
                     size_hint_y: None
                     height: "64dp"
-                    padding: "16dp", "12dp"
+                    padding: "20dp", "12dp"
                     md_bg_color: "#0D0D0D"
-                    spacing: "12dp"
+                    spacing: "10dp"
                     
                     MDLabel:
                         text: "ANYLOAD"
@@ -199,7 +199,8 @@ MDNavigationLayout:
                         theme_text_color: "Custom"
                         text_color: "#00D2A0"
                         size_hint_x: None
-                        width: self.texture_size[0]
+                        width: "150dp"
+                        halign: "left"
                     
                     Widget:
                     
@@ -208,6 +209,8 @@ MDNavigationLayout:
                         icon: "menu"
                         theme_text_color: "Custom"
                         text_color: "#FFFFFF"
+                        size_hint_x: None
+                        width: "48dp"
                         on_release: app.show_menu()
                 
                 # Main Content
@@ -217,12 +220,12 @@ MDNavigationLayout:
                     MDBoxLayout:
                         orientation: "vertical"
                         adaptive_height: True
-                        padding: "20dp"
+                        padding: "25dp", "40dp", "25dp", "20dp"
                         spacing: "25dp"
                         
                         Widget:
                             size_hint_y: None
-                            height: "20dp"
+                            height: "10dp"
                         
                         # Logo
                         Image:
@@ -243,10 +246,11 @@ MDNavigationLayout:
                         
                         Widget:
                             size_hint_y: None
-                            height: "10dp"
+                            height: "15dp"
                         
                         # URL Input Card (3D Pill)
                         MDCard:
+                            size_hint_x: 1
                             size_hint_y: None
                             height: "60dp"
                             md_bg_color: "#1A1A1A"
@@ -273,6 +277,8 @@ MDNavigationLayout:
                                     icon: "clipboard-text-outline"
                                     theme_text_color: "Custom"
                                     text_color: "#00D2A0"
+                                    size_hint_x: None
+                                    width: "48dp"
                                     pos_hint: {"center_y": 0.5}
                                     on_release: app.handle_paste()
                         
@@ -288,84 +294,155 @@ MDNavigationLayout:
                             height: "20dp" if app.url_error_visible else "0dp"
                             opacity: 1 if app.url_error_visible else 0
                         
-                        # Teal Action Buttons
+                        # Teal Action Buttons (FULL WIDTH)
                         MDRaisedButton:
                             id: btn_video
-                            text: "  Auto Best Quality"
+                            text: "Auto Best Quality"
                             icon: "play-box-outline"
-                            md_bg_color: "#00D2A0"
+                            md_bg_color: get_color_from_hex("#00D2A0")
                             theme_text_color: "Custom"
-                            text_color: "#0D0D0D"
+                            text_color: [0, 0, 0, 1]
                             font_style: "Subtitle1"
+                            size_hint_x: 1
                             size_hint_y: None
                             height: "60dp"
+                            radius: [30, 30, 30, 30]
                             bold: True
                             on_touch_down: app.animate_button_press(self) if self.collide_point(*args[1].pos) else None
                             on_release: app.handle_download("video")
                         
                         MDRaisedButton:
                             id: btn_audio
-                            text: "  Audio Only"
+                            text: "Audio Only"
                             icon: "music-note"
-                            md_bg_color: "#00D2A0"
+                            md_bg_color: get_color_from_hex("#00D2A0")
                             theme_text_color: "Custom"
-                            text_color: "#0D0D0D"
+                            text_color: [0, 0, 0, 1]
                             font_style: "Subtitle1"
+                            size_hint_x: 1
                             size_hint_y: None
                             height: "60dp"
+                            radius: [30, 30, 30, 30]
                             bold: True
                             on_touch_down: app.animate_button_press(self) if self.collide_point(*args[1].pos) else None
                             on_release: app.handle_download("audio")
                         
                         MDRaisedButton:
                             id: btn_playlist
-                            text: "  Playlist Download"
+                            text: "Playlist Download"
                             icon: "playlist-play"
-                            md_bg_color: "#00D2A0"
+                            md_bg_color: get_color_from_hex("#00D2A0")
                             theme_text_color: "Custom"
-                            text_color: "#0D0D0D"
+                            text_color: [0, 0, 0, 1]
                             font_style: "Subtitle1"
+                            size_hint_x: 1
                             size_hint_y: None
                             height: "60dp"
+                            radius: [30, 30, 30, 30]
                             bold: True
                             on_touch_down: app.animate_button_press(self) if self.collide_point(*args[1].pos) else None
                             on_release: app.handle_download("playlist")
                         
                         Widget:
                             size_hint_y: None
-                            height: "80dp"
+                            height: "20dp"
                 
-                # Bottom Navigation
-                MDBottomNavigation:
+                # Custom Bottom Navigation Bar
+                MDBoxLayout:
+                    orientation: "horizontal"
                     size_hint_y: None
-                    height: "56dp"
+                    height: "65dp"
                     md_bg_color: "#1A1A1A"
-                    text_color_active: "#00D2A0"
-                    text_color_normal: "#666666"
+                    padding: "5dp", "5dp"
                     
-                    MDBottomNavigationItem:
-                        name: "home"
-                        text: "Home"
-                        icon: "home"
-                        on_tab_press: screen_manager.current = "home"
-                    
-                    MDBottomNavigationItem:
-                        name: "tasks"
-                        text: "Tasks"
-                        icon: "format-list-checks"
-                        on_tab_press: screen_manager.current = "tasks"
-                    
-                    MDBottomNavigationItem:
-                        name: "library"
-                        text: "Library"
-                        icon: "video"
-                        on_tab_press: screen_manager.current = "library"
-                    
-                    MDBottomNavigationItem:
-                        name: "configs"
-                        text: "Configs"
-                        icon: "cog"
-                        on_tab_press: screen_manager.current = "configs"
+                    MDGridLayout:
+                        cols: 4
+                        size_hint_x: 1
+                        spacing: "2dp"
+                        
+                        # Home Tab
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            
+                            MDIconButton:
+                                icon: "home"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "home" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "home"
+                            
+                            MDLabel:
+                                text: "Home"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "home" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
+                        
+                        # Tasks Tab
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            
+                            MDIconButton:
+                                icon: "format-list-checks"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "tasks" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "tasks"
+                            
+                            MDLabel:
+                                text: "Tasks"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "tasks" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
+                        
+                        # Library Tab
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            
+                            MDIconButton:
+                                icon: "video"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "library" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "library"
+                            
+                            MDLabel:
+                                text: "Library"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "library" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
+                        
+                        # Configs Tab
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            
+                            MDIconButton:
+                                icon: "cog"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "configs" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "configs"
+                            
+                            MDLabel:
+                                text: "Configs"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "configs" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
         
         # ========== TASKS SCREEN ==========
         MDScreen:
@@ -386,6 +463,9 @@ MDNavigationLayout:
                         font_style: "H6"
                         theme_text_color: "Custom"
                         text_color: "#00D2A0"
+                        size_hint_x: None
+                        width: "250dp"
+                        halign: "left"
                 
                 ScrollView:
                     do_scroll_x: False
@@ -397,36 +477,90 @@ MDNavigationLayout:
                         padding: "20dp"
                         spacing: "15dp"
                 
-                MDBottomNavigation:
+                # Custom Bottom Navigation Bar
+                MDBoxLayout:
+                    orientation: "horizontal"
                     size_hint_y: None
-                    height: "56dp"
+                    height: "65dp"
                     md_bg_color: "#1A1A1A"
-                    text_color_active: "#00D2A0"
-                    text_color_normal: "#666666"
+                    padding: "5dp", "5dp"
                     
-                    MDBottomNavigationItem:
-                        name: "home"
-                        text: "Home"
-                        icon: "home"
-                        on_tab_press: screen_manager.current = "home"
-                    
-                    MDBottomNavigationItem:
-                        name: "tasks"
-                        text: "Tasks"
-                        icon: "format-list-checks"
-                        on_tab_press: screen_manager.current = "tasks"
-                    
-                    MDBottomNavigationItem:
-                        name: "library"
-                        text: "Library"
-                        icon: "video"
-                        on_tab_press: screen_manager.current = "library"
-                    
-                    MDBottomNavigationItem:
-                        name: "configs"
-                        text: "Configs"
-                        icon: "cog"
-                        on_tab_press: screen_manager.current = "configs"
+                    MDGridLayout:
+                        cols: 4
+                        size_hint_x: 1
+                        spacing: "2dp"
+                        
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            MDIconButton:
+                                icon: "home"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "home" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "home"
+                            MDLabel:
+                                text: "Home"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "home" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
+                        
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            MDIconButton:
+                                icon: "format-list-checks"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "tasks" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "tasks"
+                            MDLabel:
+                                text: "Tasks"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "tasks" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
+                        
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            MDIconButton:
+                                icon: "video"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "library" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "library"
+                            MDLabel:
+                                text: "Library"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "library" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
+                        
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            MDIconButton:
+                                icon: "cog"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "configs" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "configs"
+                            MDLabel:
+                                text: "Configs"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "configs" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
         
         # ========== LIBRARY SCREEN ==========
         MDScreen:
@@ -450,6 +584,7 @@ MDNavigationLayout:
                         text_color: "#00D2A0"
                         size_hint_y: None
                         height: "30dp"
+                        halign: "left"
                     
                     MDBoxLayout:
                         orientation: "horizontal"
@@ -488,36 +623,90 @@ MDNavigationLayout:
                         padding: "20dp"
                         spacing: "15dp"
                 
-                MDBottomNavigation:
+                # Custom Bottom Navigation Bar
+                MDBoxLayout:
+                    orientation: "horizontal"
                     size_hint_y: None
-                    height: "56dp"
+                    height: "65dp"
                     md_bg_color: "#1A1A1A"
-                    text_color_active: "#00D2A0"
-                    text_color_normal: "#666666"
+                    padding: "5dp", "5dp"
                     
-                    MDBottomNavigationItem:
-                        name: "home"
-                        text: "Home"
-                        icon: "home"
-                        on_tab_press: screen_manager.current = "home"
-                    
-                    MDBottomNavigationItem:
-                        name: "tasks"
-                        text: "Tasks"
-                        icon: "format-list-checks"
-                        on_tab_press: screen_manager.current = "tasks"
-                    
-                    MDBottomNavigationItem:
-                        name: "library"
-                        text: "Library"
-                        icon: "video"
-                        on_tab_press: screen_manager.current = "library"
-                    
-                    MDBottomNavigationItem:
-                        name: "configs"
-                        text: "Configs"
-                        icon: "cog"
-                        on_tab_press: screen_manager.current = "configs"
+                    MDGridLayout:
+                        cols: 4
+                        size_hint_x: 1
+                        spacing: "2dp"
+                        
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            MDIconButton:
+                                icon: "home"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "home" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "home"
+                            MDLabel:
+                                text: "Home"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "home" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
+                        
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            MDIconButton:
+                                icon: "format-list-checks"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "tasks" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "tasks"
+                            MDLabel:
+                                text: "Tasks"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "tasks" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
+                        
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            MDIconButton:
+                                icon: "video"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "library" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "library"
+                            MDLabel:
+                                text: "Library"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "library" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
+                        
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            MDIconButton:
+                                icon: "cog"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "configs" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "configs"
+                            MDLabel:
+                                text: "Configs"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "configs" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
         
         # ========== CONFIGS SCREEN ==========
         MDScreen:
@@ -666,36 +855,90 @@ MDNavigationLayout:
                             size_hint_y: None
                             height: "80dp"
                 
-                MDBottomNavigation:
+                # Custom Bottom Navigation Bar
+                MDBoxLayout:
+                    orientation: "horizontal"
                     size_hint_y: None
-                    height: "56dp"
+                    height: "65dp"
                     md_bg_color: "#1A1A1A"
-                    text_color_active: "#00D2A0"
-                    text_color_normal: "#666666"
+                    padding: "5dp", "5dp"
                     
-                    MDBottomNavigationItem:
-                        name: "home"
-                        text: "Home"
-                        icon: "home"
-                        on_tab_press: screen_manager.current = "home"
-                    
-                    MDBottomNavigationItem:
-                        name: "tasks"
-                        text: "Tasks"
-                        icon: "format-list-checks"
-                        on_tab_press: screen_manager.current = "tasks"
-                    
-                    MDBottomNavigationItem:
-                        name: "library"
-                        text: "Library"
-                        icon: "video"
-                        on_tab_press: screen_manager.current = "library"
-                    
-                    MDBottomNavigationItem:
-                        name: "configs"
-                        text: "Configs"
-                        icon: "cog"
-                        on_tab_press: screen_manager.current = "configs"
+                    MDGridLayout:
+                        cols: 4
+                        size_hint_x: 1
+                        spacing: "2dp"
+                        
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            MDIconButton:
+                                icon: "home"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "home" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "home"
+                            MDLabel:
+                                text: "Home"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "home" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
+                        
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            MDIconButton:
+                                icon: "format-list-checks"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "tasks" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "tasks"
+                            MDLabel:
+                                text: "Tasks"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "tasks" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
+                        
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            MDIconButton:
+                                icon: "video"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "library" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "library"
+                            MDLabel:
+                                text: "Library"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "library" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
+                        
+                        MDBoxLayout:
+                            orientation: "vertical"
+                            spacing: "2dp"
+                            MDIconButton:
+                                icon: "cog"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "configs" else "#666666"
+                                pos_hint: {"center_x": 0.5}
+                                on_release: screen_manager.current = "configs"
+                            MDLabel:
+                                text: "Configs"
+                                font_style: "Caption"
+                                theme_text_color: "Custom"
+                                text_color: "#00D2A0" if screen_manager.current == "configs" else "#666666"
+                                halign: "center"
+                                size_hint_y: None
+                                height: "15dp"
     
     MDNavigationDrawer:
         id: nav_drawer
