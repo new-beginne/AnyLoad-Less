@@ -107,7 +107,9 @@
             width: "30dp"
             on_release: root.show_menu(self)
 
-MDNavigationLayout:
+MDBoxLayout:
+    orientation: "vertical"
+    md_bg_color: "#0D0D0D"
     
     ScreenManager:
         id: screen_manager
@@ -189,22 +191,36 @@ MDNavigationLayout:
                 md_bg_color: "#0D0D0D"
                 
                 # Top App Bar
-                MDTopAppBar:
-                    title: "ANYLOAD"
+                MDBoxLayout:
+                    orientation: "horizontal"
+                    size_hint_y: None
+                    height: "64dp"
+                    padding: "16dp", "12dp"
                     md_bg_color: "#0D0D0D"
-                    specific_text_color: "#FFFFFF"
-                    elevation: 0
-                    right_action_items: [["menu", lambda x: app.toggle_nav_drawer()]]
-                    pos_hint: {"top": 1}
+                    spacing: "12dp"
+                    
+                    MDLabel:
+                        text: "ANYLOAD"
+                        font_style: "H6"
+                        theme_text_color: "Custom"
+                        text_color: "#FFFFFF"
+                        size_hint_x: None
+                        width: self.texture_size[0]
+                        adaptive_width: True
+                    
+                    Widget:
+                    
+                    MDIconButton:
+                        icon: "menu"
+                        theme_text_color: "Custom"
+                        text_color: "#FFFFFF"
+                        on_release: app.show_menu()
                 
-                # Animated Dots Below Title
+                # Animated Dots
                 MDBoxLayout:
                     size_hint_y: None
                     height: "20dp"
-                    padding: "0dp", "0dp"
-                    
-                    Widget:
-                        size_hint_x: 0.35
+                    padding: "16dp", "0dp"
                     
                     MDBoxLayout:
                         orientation: "horizontal"
@@ -593,80 +609,34 @@ MDNavigationLayout:
                             size_hint_y: None
                             height: "20dp"
     
-    # Right-Side Navigation Drawer
-    MDNavigationDrawer:
-        id: nav_drawer
-        anchor: "right"
+    # Bottom Navigation
+    MDBottomNavigation:
+        size_hint_y: None
+        height: "56dp"
         md_bg_color: "#1A1A1A"
+        text_color_active: "#00D2A0"
+        text_color_normal: "#666666"
         
-        MDBoxLayout:
-            orientation: "vertical"
-            padding: "20dp"
-            spacing: "20dp"
-            
-            MDLabel:
-                text: "Menu"
-                font_style: "H6"
-                theme_text_color: "Custom"
-                text_color: "#00D2A0"
-                size_hint_y: None
-                height: "40dp"
-            
-            MDRaisedButton:
-                text: "About AnyLoad"
-                md_bg_color: "#2A2A2A"
-                theme_text_color: "Custom"
-                text_color: "#FFFFFF"
-                size_hint_y: None
-                height: "50dp"
-                on_release: app.show_about()
-            
-            MDRaisedButton:
-                text: "Privacy Policy"
-                md_bg_color: "#2A2A2A"
-                theme_text_color: "Custom"
-                text_color: "#FFFFFF"
-                size_hint_y: None
-                height: "50dp"
-                on_release: app.show_privacy()
-            
-            MDRaisedButton:
-                text: "App Version (v1.1)"
-                md_bg_color: "#2A2A2A"
-                theme_text_color: "Custom"
-                text_color: "#FFFFFF"
-                size_hint_y: None
-                height: "50dp"
-                on_release: app.show_version()
-            
-            Widget:
-
-# Bottom Navigation
-MDBottomNavigation:
-    md_bg_color: "#1A1A1A"
-    text_color_active: "#00D2A0"
-    text_color_normal: "#666666"
-    
-    MDBottomNavigationItem:
-        name: "home"
-        text: "Home"
-        icon: "home"
-        on_tab_press: screen_manager.current = "home"
-    
-    MDBottomNavigationItem:
-        name: "tasks"
-        text: "Tasks"
-        icon: "download"
-        on_tab_press: screen_manager.current = "tasks"
-    
-    MDBottomNavigationItem:
-        name: "library"
-        text: "Library"
-        icon: "video"
-        on_tab_press: screen_manager.current = "library"
-    
-    MDBottomNavigationItem:
-        name: "configs"
-        text: "Configs"
-        icon: "cog"
-        on_tab_press: screen_manager.current = "configs"
+        MDBottomNavigationItem:
+            name: "home"
+            text: "Home"
+            icon: "home"
+            on_tab_press: screen_manager.current = "home"
+        
+        MDBottomNavigationItem:
+            name: "tasks"
+            text: "Tasks"
+            icon: "download"
+            on_tab_press: screen_manager.current = "tasks"
+        
+        MDBottomNavigationItem:
+            name: "library"
+            text: "Library"
+            icon: "video"
+            on_tab_press: screen_manager.current = "library"
+        
+        MDBottomNavigationItem:
+            name: "configs"
+            text: "Configs"
+            icon: "cog"
+            on_tab_press: screen_manager.current = "configs"

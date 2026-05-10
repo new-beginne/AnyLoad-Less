@@ -412,19 +412,31 @@ class AnyLoadApp(MDApp):
     def on_max_downloads(self, instance, value):
         self.download_manager.max_concurrent = int(value)
     
-    def toggle_nav_drawer(self):
-        self.root.ids.nav_drawer.set_state("toggle")
+    def show_menu(self):
+        menu_items = [
+            {"text": "About AnyLoad", "viewclass": "OneLineListItem", "on_release": lambda: self.show_about()},
+            {"text": "Privacy Policy", "viewclass": "OneLineListItem", "on_release": lambda: self.show_privacy()},
+            {"text": "App Version (v1.1)", "viewclass": "OneLineListItem", "on_release": lambda: self.show_version()}
+        ]
+        self.menu = MDDropdownMenu(
+            items=menu_items,
+            width_mult=4
+        )
+        self.menu.open()
     
     def show_about(self):
-        self.root.ids.nav_drawer.set_state("close")
+        if hasattr(self, 'menu'):
+            self.menu.dismiss()
         toast("AnyLoad - Download Anything. Anytime.")
     
     def show_privacy(self):
-        self.root.ids.nav_drawer.set_state("close")
+        if hasattr(self, 'menu'):
+            self.menu.dismiss()
         toast("Privacy Policy")
     
     def show_version(self):
-        self.root.ids.nav_drawer.set_state("close")
+        if hasattr(self, 'menu'):
+            self.menu.dismiss()
         toast("AnyLoad v1.1")
 
 if __name__ == "__main__":
