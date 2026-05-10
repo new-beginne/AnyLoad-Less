@@ -107,9 +107,7 @@
             width: "30dp"
             on_release: root.show_menu(self)
 
-MDBoxLayout:
-    orientation: "vertical"
-    md_bg_color: "#0D0D0D"
+MDNavigationLayout:
     
     ScreenManager:
         id: screen_manager
@@ -214,7 +212,7 @@ MDBoxLayout:
                         icon: "menu"
                         theme_text_color: "Custom"
                         text_color: "#FFFFFF"
-                        on_release: app.show_menu()
+                        on_release: app.toggle_nav_drawer()
                 
                 # Animated Dots
                 MDBoxLayout:
@@ -303,7 +301,7 @@ MDBoxLayout:
                             size_hint_y: None
                             height: "55dp"
                             md_bg_color: "#2A2A2A"
-                            radius: [30]
+                            radius: [30, 30, 30, 30]
                             elevation: 0
                             padding: "20dp", "10dp"
                             
@@ -339,7 +337,6 @@ MDBoxLayout:
                             font_style: "Subtitle1"
                             size_hint_y: None
                             height: "55dp"
-                            radius: [30]
                             on_release: app.download_video()
                         
                         MDRaisedButton:
@@ -351,7 +348,6 @@ MDBoxLayout:
                             font_style: "Subtitle1"
                             size_hint_y: None
                             height: "55dp"
-                            radius: [30]
                             on_release: app.download_audio()
                         
                         MDRaisedButton:
@@ -363,7 +359,6 @@ MDBoxLayout:
                             font_style: "Subtitle1"
                             size_hint_y: None
                             height: "55dp"
-                            radius: [30]
                             on_release: app.download_playlist()
                         
                         Widget:
@@ -517,7 +512,7 @@ MDBoxLayout:
                             size_hint_y: None
                             height: "280dp"
                             md_bg_color: "#1A1A1A"
-                            radius: [15]
+                            radius: [15, 15, 15, 15]
                             elevation: 0
                             padding: "20dp"
                             
@@ -609,34 +604,80 @@ MDBoxLayout:
                             size_hint_y: None
                             height: "20dp"
     
-    # Bottom Navigation
-    MDBottomNavigation:
-        size_hint_y: None
-        height: "56dp"
+    # Right-Side Navigation Drawer
+    MDNavigationDrawer:
+        id: nav_drawer
+        anchor: "right"
         md_bg_color: "#1A1A1A"
-        text_color_active: "#00D2A0"
-        text_color_normal: "#666666"
         
-        MDBottomNavigationItem:
-            name: "home"
-            text: "Home"
-            icon: "home"
-            on_tab_press: screen_manager.current = "home"
-        
-        MDBottomNavigationItem:
-            name: "tasks"
-            text: "Tasks"
-            icon: "download"
-            on_tab_press: screen_manager.current = "tasks"
-        
-        MDBottomNavigationItem:
-            name: "library"
-            text: "Library"
-            icon: "video"
-            on_tab_press: screen_manager.current = "library"
-        
-        MDBottomNavigationItem:
-            name: "configs"
-            text: "Configs"
-            icon: "cog"
-            on_tab_press: screen_manager.current = "configs"
+        MDBoxLayout:
+            orientation: "vertical"
+            padding: "20dp"
+            spacing: "20dp"
+            
+            MDLabel:
+                text: "Menu"
+                font_style: "H6"
+                theme_text_color: "Custom"
+                text_color: "#00D2A0"
+                size_hint_y: None
+                height: "40dp"
+            
+            MDRaisedButton:
+                text: "About AnyLoad"
+                md_bg_color: "#2A2A2A"
+                theme_text_color: "Custom"
+                text_color: "#FFFFFF"
+                size_hint_y: None
+                height: "50dp"
+                on_release: app.menu_action("about")
+            
+            MDRaisedButton:
+                text: "Privacy Policy"
+                md_bg_color: "#2A2A2A"
+                theme_text_color: "Custom"
+                text_color: "#FFFFFF"
+                size_hint_y: None
+                height: "50dp"
+                on_release: app.menu_action("privacy")
+            
+            MDRaisedButton:
+                text: "App Version (v1.1)"
+                md_bg_color: "#2A2A2A"
+                theme_text_color: "Custom"
+                text_color: "#FFFFFF"
+                size_hint_y: None
+                height: "50dp"
+                on_release: app.menu_action("version")
+            
+            Widget:
+
+# Bottom Navigation
+MDBottomNavigation:
+    md_bg_color: "#1A1A1A"
+    text_color_active: "#00D2A0"
+    text_color_normal: "#666666"
+    
+    MDBottomNavigationItem:
+        name: "home"
+        text: "Home"
+        icon: "home"
+        on_tab_press: screen_manager.current = "home"
+    
+    MDBottomNavigationItem:
+        name: "tasks"
+        text: "Tasks"
+        icon: "download"
+        on_tab_press: screen_manager.current = "tasks"
+    
+    MDBottomNavigationItem:
+        name: "library"
+        text: "Library"
+        icon: "video"
+        on_tab_press: screen_manager.current = "library"
+    
+    MDBottomNavigationItem:
+        name: "configs"
+        text: "Configs"
+        icon: "cog"
+        on_tab_press: screen_manager.current = "configs"

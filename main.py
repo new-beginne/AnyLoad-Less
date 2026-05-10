@@ -219,7 +219,7 @@ class TaskCard(MDCard):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.md_bg_color = "#1A1A1A"
-        self.radius = [15]
+        self.radius = [15, 15, 15, 15]
         self.elevation = 0
         self.size_hint_y = None
         self.height = "140dp"
@@ -247,7 +247,7 @@ class LibraryCard(MDCard):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.md_bg_color = "#1A1A1A"
-        self.radius = [15]
+        self.radius = [15, 15, 15, 15]
         self.elevation = 0
         self.size_hint_y = None
         self.height = "200dp"
@@ -414,30 +414,36 @@ class AnyLoadApp(MDApp):
     
     def show_menu(self):
         menu_items = [
-            {"text": "About AnyLoad", "viewclass": "OneLineListItem", "on_release": lambda: self.show_about()},
-            {"text": "Privacy Policy", "viewclass": "OneLineListItem", "on_release": lambda: self.show_privacy()},
-            {"text": "App Version (v1.1)", "viewclass": "OneLineListItem", "on_release": lambda: self.show_version()}
+            {"text": "About AnyLoad", "viewclass": "OneLineListItem", "on_release": lambda: self.menu_action("about")},
+            {"text": "Privacy Policy", "viewclass": "OneLineListItem", "on_release": lambda: self.menu_action("privacy")},
+            {"text": "App Version (v1.1)", "viewclass": "OneLineListItem", "on_release": lambda: self.menu_action("version")}
         ]
-        self.menu = MDDropdownMenu(
-            items=menu_items,
-            width_mult=4
-        )
+        if not hasattr(self, 'menu'):
+            self.menu = MDDropdownMenu(
+                items=menu_items,
+                width_mult=4
+            )
+        self.menu.items = menu_items
         self.menu.open()
     
-    def show_about(self):
+    def menu_action(self, action):
         if hasattr(self, 'menu'):
             self.menu.dismiss()
-        toast("AnyLoad - Download Anything. Anytime.")
+        
+        if action == "about":
+            toast("AnyLoad - Download Anything. Anytime.")
+        elif action == "privacy":
+            toast("Privacy Policy")
+        elif action == "version":
+            toast("AnyLoad v1.1")
     
-    def show_privacy(self):
-        if hasattr(self, 'menu'):
-            self.menu.dismiss()
-        toast("Privacy Policy")
-    
-    def show_version(self):
-        if hasattr(self, 'menu'):
-            self.menu.dismiss()
-        toast("AnyLoad v1.1")
+    def toggle_nav_drawer(self):
+        nav_drawer = self.root.ids.get('nav_drawer')
+        if nav_drawer:
+            if nav_drawer.state == "open":
+                nav_drawer.set_state("close")
+            else:
+                nav_drawer.set_state("open")
 
 if __name__ == "__main__":
     AnyLoadApp().run()
