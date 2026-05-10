@@ -436,14 +436,6 @@ class AnyLoadApp(MDApp):
             toast("Privacy Policy")
         elif action == "version":
             toast("AnyLoad v1.1")
-    
-    def toggle_nav_drawer(self):
-        nav_drawer = self.root.ids.get('nav_drawer')
-        if nav_drawer:
-            if nav_drawer.state == "open":
-                nav_drawer.set_state("close")
-            else:
-                nav_drawer.set_state("open")
 
 if __name__ == "__main__":
     AnyLoadApp().run()

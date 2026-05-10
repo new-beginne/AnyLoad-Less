@@ -64,8 +64,6 @@
         Image:
             source: root.thumbnail
             size_hint: 1, 1
-            allow_stretch: True
-            keep_ratio: True
         
         MDFloatLayout:
             size_hint: None, None
@@ -107,7 +105,9 @@
             width: "30dp"
             on_release: root.show_menu(self)
 
-MDNavigationLayout:
+MDBoxLayout:
+    orientation: "vertical"
+    md_bg_color: "#0D0D0D"
     
     ScreenManager:
         id: screen_manager
@@ -212,7 +212,7 @@ MDNavigationLayout:
                         icon: "menu"
                         theme_text_color: "Custom"
                         text_color: "#FFFFFF"
-                        on_release: app.toggle_nav_drawer()
+                        on_release: app.show_menu()
                 
                 # Animated Dots
                 MDBoxLayout:
@@ -604,56 +604,10 @@ MDNavigationLayout:
                             size_hint_y: None
                             height: "20dp"
     
-    # Right-Side Navigation Drawer
-    MDNavigationDrawer:
-        id: nav_drawer
-        anchor: "right"
-        md_bg_color: "#1A1A1A"
-        
-        MDBoxLayout:
-            orientation: "vertical"
-            padding: "20dp"
-            spacing: "20dp"
-            
-            MDLabel:
-                text: "Menu"
-                font_style: "H6"
-                theme_text_color: "Custom"
-                text_color: "#00D2A0"
-                size_hint_y: None
-                height: "40dp"
-            
-            MDRaisedButton:
-                text: "About AnyLoad"
-                md_bg_color: "#2A2A2A"
-                theme_text_color: "Custom"
-                text_color: "#FFFFFF"
-                size_hint_y: None
-                height: "50dp"
-                on_release: app.menu_action("about")
-            
-            MDRaisedButton:
-                text: "Privacy Policy"
-                md_bg_color: "#2A2A2A"
-                theme_text_color: "Custom"
-                text_color: "#FFFFFF"
-                size_hint_y: None
-                height: "50dp"
-                on_release: app.menu_action("privacy")
-            
-            MDRaisedButton:
-                text: "App Version (v1.1)"
-                md_bg_color: "#2A2A2A"
-                theme_text_color: "Custom"
-                text_color: "#FFFFFF"
-                size_hint_y: None
-                height: "50dp"
-                on_release: app.menu_action("version")
-            
-            Widget:
-
     # Bottom Navigation
     MDBottomNavigation:
+        size_hint_y: None
+        height: "56dp"
         md_bg_color: "#1A1A1A"
         text_color_active: "#00D2A0"
         text_color_normal: "#666666"
