@@ -1,9 +1,18 @@
+"""
+Database Manager for AnyLoad v1.1
+Handles settings persistence and library management
+Thread-safe for Android multi-threading
+"""
+
 import sqlite3
 import os
 from threading import Lock
 from datetime import datetime
 
+
 class DatabaseManager:
+    """Thread-safe SQLite database manager"""
+    
     def __init__(self):
         self.db_path = None
         self.lock = Lock()
@@ -12,9 +21,11 @@ class DatabaseManager:
     def _init_db(self):
         """Initialize database with proper path for Android/Desktop"""
         try:
+            # Try Android path first
             from android.storage import app_storage_path
             base_path = app_storage_path()
         except:
+            # Fallback to desktop path
             base_path = os.path.expanduser("~/.anyload")
             os.makedirs(base_path, exist_ok=True)
         
@@ -23,7 +34,7 @@ class DatabaseManager:
         self._init_default_settings()
     
     def _get_connection(self):
-        """Thread-safe connection"""
+        """Get thread-safe database connection"""
         conn = sqlite3.connect(self.db_path, check_same_thread=False)
         conn.row_factory = sqlite3.Row
         return conn
@@ -34,7 +45,7 @@ class DatabaseManager:
             conn = self._get_connection()
             cursor = conn.cursor()
             
-            # Settings table
+            # Settings table (key-value pairs)
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS settings (
                     key TEXT PRIMARY KEY,
@@ -42,7 +53,7 @@ class DatabaseManager:
                 )
             ''')
             
-            # Library table
+            # Library table (downloaded files)
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS library (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,7 +111,7 @@ class DatabaseManager:
             conn.close()
     
     def add_to_library(self, title, path, file_type, size=0):
-        """Add a file to library"""
+        """Add a downloaded file to library"""
         with self.lock:
             conn = self._get_connection()
             cursor = conn.cursor()
@@ -115,6 +126,7 @@ class DatabaseManager:
                 conn.close()
                 return True
             except sqlite3.IntegrityError:
+                # File already exists in library
                 conn.close()
                 return False
     
@@ -142,5 +154,14 @@ class DatabaseManager:
             conn = self._get_connection()
             cursor = conn.cursor()
             cursor.execute("DELETE FROM library WHERE id = ?", (item_id,))
+            conn.commit()
+            conn.close()
+    
+    def clear_library(self):
+        """Clear all library items"""
+        with self.lock:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM library")
             conn.commit()
             conn.close()

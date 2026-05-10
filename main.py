@@ -8,15 +8,23 @@ from kivy.animation import Animation
 from kivy.utils import platform
 from kivymd.uix.card import MDCard
 from kivymd.uix.menu import MDDropdownMenu
-from kivymd.uix.tab import MDTabsBase
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.toast import toast
 
 from db import db
 from core import QueueManager
 
+# Cross-platform toast wrapper
+def toast(text):
+    """Toast notification for Android, console print for desktop"""
+    try:
+        from kivymd.toast import toast as md_toast
+        md_toast(text)
+    except (ImportError, TypeError):
+        print(f"[TOAST] {text}")
+
 
 class TaskCard(MDCard):
+    """Download task card with progress tracking"""
     filename = StringProperty("video.mp4")
     progress = NumericProperty(0)
     speed = StringProperty("0 MB/s")
@@ -34,6 +42,7 @@ class TaskCard(MDCard):
         self.padding = "15dp"
     
     def toggle_pause(self):
+        """Toggle pause/resume state"""
         self.is_paused = not self.is_paused
         app = MDApp.get_running_app()
         if self.is_paused:
@@ -42,10 +51,13 @@ class TaskCard(MDCard):
             app.queue_manager.resume_download(self.download_id)
     
     def cancel_download(self):
+        """Cancel download and remove card"""
         app = MDApp.get_running_app()
         app.queue_manager.cancel_download(self.download_id)
 
+
 class LibraryCard(MDCard):
+    """Library item card with 3-dot menu"""
     filename = StringProperty("video.mp4")
     thumbnail = StringProperty("assets/logo.png")
     file_type = StringProperty("video")
@@ -60,6 +72,7 @@ class LibraryCard(MDCard):
         self.menu = None
     
     def show_menu(self, button):
+        """Show 3-dot menu"""
         menu_items = [
             {"text": "Play", "viewclass": "OneLineListItem", "on_release": lambda: self.play_file()},
             {"text": "Details", "viewclass": "OneLineListItem", "on_release": lambda: self.show_details()},
@@ -91,45 +104,54 @@ class LibraryCard(MDCard):
             self.parent.remove_widget(self)
         toast("File deleted")
 
-class Tab(MDBoxLayout, MDTabsBase):
+
+class Tab(MDBoxLayout):
+    """Tab container for Library sub-tabs"""
     pass
 
+
 class AnyLoadApp(MDApp):
+    """Main application class"""
+    
+    # Properties
     is_active_download = BooleanProperty(False)
     splash_dot_index = NumericProperty(0)
     topbar_dot_index = NumericProperty(0)
-    spinner_angle = NumericProperty(0)
-    library_filter = StringProperty("videos")
     max_downloads = NumericProperty(3)
     wifi_only = BooleanProperty(False)
-    download_path = StringProperty("/storage/emulated/0/Download/AnyLoad")
+    download_path = StringProperty("/sdcard/Download/AnyLoad")
     url_error_visible = BooleanProperty(False)
     
     def build(self):
+        """Build the app UI"""
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Teal"
         self.title = "AnyLoad"
         
+        # Initialize queue manager
         self.queue_manager = QueueManager(self)
         
         return Builder.load_file("ui.kv")
     
     def on_pause(self):
+        """Handle app pause (Android lifecycle)"""
         return True
     
     def on_start(self):
+        """App startup logic"""
         if platform == "android":
             self.request_android_permissions()
         
         # Load settings from database
         self.load_settings_from_db()
         
+        # Start splash animation
         self.splash_event = Clock.schedule_interval(self.animate_splash_dots, 0.5)
         Clock.schedule_once(self.switch_to_home, 3.0)
         Clock.schedule_once(self.load_library_from_db, 3.5)
-        Clock.schedule_once(self.start_topbar_animation, 3.5)
     
     def request_android_permissions(self):
+        """Request Android 11+ permissions"""
         try:
             from android.permissions import request_permissions, Permission
             permissions = [
@@ -144,40 +166,27 @@ class AnyLoadApp(MDApp):
             pass
     
     def animate_splash_dots(self, dt):
+        """Animate splash screen dots"""
         self.splash_dot_index = (self.splash_dot_index + 1) % 3
     
     def switch_to_home(self, dt):
+        """Switch from splash to home screen"""
         if self.splash_event:
             self.splash_event.cancel()
         self.root.ids.screen_manager.current = "home"
-    
-    def start_topbar_animation(self, dt):
+        
+        # Start top bar animation
         Clock.schedule_interval(self.animate_topbar_dots, 0.6)
     
     def animate_topbar_dots(self, dt):
-        self.topbar_dot_index = (self.topbar_dot_index + 1) % 3
-    
-    def on_is_active_download(self, instance, value):
-        if value:
-            self.start_spinner()
-        else:
-            self.stop_spinner()
-    
-    def start_spinner(self):
-        anim = Animation(spinner_angle=360, duration=1.0)
-        anim.bind(on_complete=self.loop_spinner)
-        anim.start(self)
-    
-    def loop_spinner(self, *args):
-        self.spinner_angle = 0
+        """Animate top bar dots only when downloads are active"""
         if self.is_active_download:
-            self.start_spinner()
-    
-    def stop_spinner(self):
-        Animation.cancel_all(self, 'spinner_angle')
-        self.spinner_angle = 0
+            self.topbar_dot_index = (self.topbar_dot_index + 1) % 3
+        else:
+            self.topbar_dot_index = -1  # Hide all dots when no downloads
     
     def handle_paste(self):
+        """Paste URL from clipboard"""
         try:
             from kivy.core.clipboard import Clipboard
             url = Clipboard.paste()
@@ -189,6 +198,7 @@ class AnyLoadApp(MDApp):
             pass
     
     def validate_url(self, url):
+        """Validate URL format"""
         if not url or not url.strip():
             return False
         url = url.strip()
@@ -197,6 +207,7 @@ class AnyLoadApp(MDApp):
         return True
     
     def handle_download(self, download_type):
+        """Handle download button click"""
         url = self.root.ids.url_input.text.strip()
         
         if not self.validate_url(url):
@@ -210,15 +221,18 @@ class AnyLoadApp(MDApp):
         
         # Switch to tasks tab
         self.root.ids.screen_manager.current = "tasks"
+        
+        # Mark downloads as active
+        self.is_active_download = True
     
     def animate_button_press(self, button):
-        # MDRaisedButton doesn't support scale_x/scale_y, use opacity instead
+        """Animate button press"""
         anim = Animation(opacity=0.7, duration=0.1)
         anim += Animation(opacity=1.0, duration=0.1)
         anim.start(button)
     
     def load_settings_from_db(self):
-        """Load settings from database and update UI"""
+        """Load settings from database"""
         try:
             queue_limit = db.get_setting("queue_limit")
             wifi_only = db.get_setting("wifi_only")
@@ -234,7 +248,7 @@ class AnyLoadApp(MDApp):
             print(f"Error loading settings: {e}")
     
     def change_queue_limit(self, value):
-        """Update queue limit in database and app"""
+        """Update queue limit"""
         self.max_downloads = int(value)
         db.update_setting("queue_limit", int(value))
         self.queue_manager.update_max_concurrent(int(value))
@@ -248,17 +262,17 @@ class AnyLoadApp(MDApp):
         toast(f"Wi-Fi only mode {status}")
     
     def set_download_path(self, path):
-        """Update download path in database"""
+        """Update download path"""
         self.download_path = path
         db.update_setting("download_path", path)
-        toast(f"Download path updated")
+        toast("Download path updated")
     
     def load_library_from_db(self, dt=None):
         """Load library items from database"""
         try:
-            videos_container = self.root.ids.library_tabs.ids.videos_container
-            audio_container = self.root.ids.library_tabs.ids.audio_container
-            playlists_container = self.root.ids.library_tabs.ids.playlists_container
+            videos_container = self.root.ids.videos_container
+            audio_container = self.root.ids.audio_container
+            playlists_container = self.root.ids.playlists_container
             
             # Clear existing widgets
             videos_container.clear_widgets()
@@ -316,24 +330,12 @@ class AnyLoadApp(MDApp):
         except Exception as e:
             print(f"Error loading library: {e}")
     
-    def filter_library(self, filter_type):
-        self.library_filter = filter_type
-        if filter_type == "videos":
-            self.root.ids.library_tabs.switch_tab("Videos")
-        elif filter_type == "audio":
-            self.root.ids.library_tabs.switch_tab("Audio")
-        elif filter_type == "playlists":
-            self.root.ids.library_tabs.switch_tab("Playlists")
-        toast(f"Showing {filter_type}")
-    
     def change_download_path(self):
-        # For now, just show toast. File picker in Phase 5
+        """Change download path (file picker in Phase 5)"""
         toast("File picker coming in Phase 5")
-        # Example: self.set_download_path("/new/path")
-    
-
     
     def show_menu(self):
+        """Show top menu"""
         try:
             menu_button = self.root.ids.get('menu_button')
             if not menu_button:
@@ -351,10 +353,11 @@ class AnyLoadApp(MDApp):
                 self.menu.caller = menu_button
                 self.menu.items = menu_items
             self.menu.open()
-        except Exception as e:
+        except Exception:
             toast("Menu unavailable")
     
     def menu_action(self, action):
+        """Handle menu actions"""
         if hasattr(self, 'menu'):
             self.menu.dismiss()
         
@@ -364,6 +367,7 @@ class AnyLoadApp(MDApp):
             toast("Privacy Policy")
         elif action == "version":
             toast("AnyLoad v1.1")
+
 
 if __name__ == "__main__":
     AnyLoadApp().run()

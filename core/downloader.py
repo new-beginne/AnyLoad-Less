@@ -1,3 +1,9 @@
+"""
+Download Engine for AnyLoad v1.1
+Lazy yt-dlp loading, queue management, and progress tracking
+Thread-safe for Android multi-core processors
+"""
+
 import os
 import re
 import gc
@@ -7,7 +13,10 @@ from queue import Queue
 from kivy.clock import Clock
 from kivy.utils import platform
 
+
 class DownloadTask:
+    """Individual download task with progress tracking"""
+    
     def __init__(self, url, download_type, task_card, app, download_id):
         self.url = url
         self.download_type = download_type
@@ -44,9 +53,9 @@ class DownloadTask:
         self.thread.start()
     
     def _download_worker(self):
-        """Worker thread - imports yt-dlp lazily"""
+        """Worker thread - LAZY LOADS yt-dlp here"""
         try:
-            # LAZY IMPORT - Only load yt-dlp inside thread
+            # LAZY IMPORT - Only load yt-dlp inside thread to prevent boot timeout
             import yt_dlp
             
             os.makedirs(self.download_path, exist_ok=True)
@@ -56,7 +65,7 @@ class DownloadTask:
                 'progress_hooks': [self._progress_hook],
                 'quiet': True,
                 'no_warnings': True,
-                'no_color': True,
+                'no_color': True,  # Prevent ANSI codes
             }
             
             # Format selection based on download type
@@ -140,7 +149,8 @@ class DownloadTask:
                     else:
                         eta_str = "--:--"
                     
-                    # Update UI on main thread
+                    # Clean strings and update UI on main thread
+                    speed_str = self._clean_string(speed_str)
                     Clock.schedule_once(lambda dt: self._update_ui(progress, speed_str, eta_str), 0)
             except Exception:
                 pass
@@ -152,7 +162,7 @@ class DownloadTask:
         self.task_card.eta = eta
     
     def _on_complete(self, title, filepath, filesize):
-        """Handle download completion"""
+        """Handle download completion - vanish card and add to library"""
         # Add to library database
         try:
             from db import db
@@ -161,16 +171,16 @@ class DownloadTask:
         except Exception as e:
             print(f"Failed to add to library: {e}")
         
-        # Remove task card from UI
+        # Remove task card from UI (vanish logic)
         Clock.schedule_once(lambda dt: self._remove_card(), 0)
         
         # Notify queue manager
         Clock.schedule_once(lambda dt: self.app.queue_manager.on_download_complete(self.download_id), 0)
         
-        # Reload library
+        # Reload library to show new file
         Clock.schedule_once(lambda dt: self.app.load_library_from_db(), 0)
         
-        # Clean up memory
+        # Clean up memory for low-end devices
         gc.collect()
     
     def _on_error(self, error_msg):
@@ -179,8 +189,14 @@ class DownloadTask:
         self.task_card.eta = ""
         
         # Show toast
-        from kivymd.toast import toast
-        toast(f"Error: {error_msg[:50]}")
+        def show_toast(text):
+            try:
+                from kivymd.toast import toast as md_toast
+                md_toast(text)
+            except (ImportError, TypeError):
+                print(f"[TOAST] {text}")
+        
+        show_toast(f"Error: {error_msg[:50]}")
         
         # Notify queue manager
         self.app.queue_manager.on_download_complete(self.download_id)
@@ -212,6 +228,8 @@ class DownloadTask:
 
 
 class QueueManager:
+    """Manages download queue with concurrency limit"""
+    
     def __init__(self, app):
         self.app = app
         self.active_downloads = {}
@@ -241,7 +259,12 @@ class QueueManager:
     
     def add_download(self, url, download_type):
         """Add download to queue"""
-        from kivymd.toast import toast
+        def show_toast(text):
+            try:
+                from kivymd.toast import toast as md_toast
+                md_toast(text)
+            except (ImportError, TypeError):
+                print(f"[TOAST] {text}")
         
         download_id = f"dl_{int(time.time() * 1000)}"
         
@@ -266,17 +289,21 @@ class QueueManager:
                 # Start immediately
                 self.active_downloads[download_id] = download_task
                 download_task.start()
-                Clock.schedule_once(lambda dt: toast("Download started"), 0)
+                Clock.schedule_once(lambda dt: show_toast("Download started"), 0)
             else:
                 # Add to waiting queue
                 self.waiting_queue.put((download_id, download_task))
-                Clock.schedule_once(lambda dt: toast("Added to queue"), 0)
+                Clock.schedule_once(lambda dt: show_toast("Added to queue"), 0)
     
     def on_download_complete(self, download_id):
         """Handle download completion and start next in queue"""
         with self.lock:
             if download_id in self.active_downloads:
                 del self.active_downloads[download_id]
+            
+            # Check if all downloads are complete
+            if len(self.active_downloads) == 0:
+                Clock.schedule_once(lambda dt: setattr(self.app, 'is_active_download', False), 0)
             
             # Process waiting queue
             self._process_queue()
