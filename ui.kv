@@ -1,4 +1,8 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
+#:import MDBoxLayout kivymd.uix.boxlayout.MDBoxLayout
+
+<Tab>:
+    orientation: "vertical"
 
 <TaskCard>:
     orientation: "vertical"
@@ -201,6 +205,46 @@ MDNavigationLayout:
                         size_hint_x: None
                         width: "150dp"
                         halign: "left"
+                    
+                    Widget:
+                    
+                    # Top Bar 3-Dot Animation
+                    MDBoxLayout:
+                        orientation: "horizontal"
+                        size_hint: None, None
+                        size: "60dp", "20dp"
+                        spacing: "8dp"
+                        pos_hint: {"center_y": 0.5}
+                        
+                        Widget:
+                            size_hint: None, None
+                            size: "12dp", "12dp"
+                            canvas:
+                                Color:
+                                    rgba: get_color_from_hex("#00D2A0") if app.topbar_dot_index == 0 else get_color_from_hex("#333333")
+                                Ellipse:
+                                    pos: self.pos
+                                    size: self.size
+                        
+                        Widget:
+                            size_hint: None, None
+                            size: "12dp", "12dp"
+                            canvas:
+                                Color:
+                                    rgba: get_color_from_hex("#00D2A0") if app.topbar_dot_index == 1 else get_color_from_hex("#333333")
+                                Ellipse:
+                                    pos: self.pos
+                                    size: self.size
+                        
+                        Widget:
+                            size_hint: None, None
+                            size: "12dp", "12dp"
+                            canvas:
+                                Color:
+                                    rgba: get_color_from_hex("#00D2A0") if app.topbar_dot_index == 2 else get_color_from_hex("#333333")
+                                Ellipse:
+                                    pos: self.pos
+                                    size: self.size
                     
                     Widget:
                     
@@ -571,57 +615,63 @@ MDNavigationLayout:
                 md_bg_color: "#0D0D0D"
                 
                 MDBoxLayout:
-                    orientation: "vertical"
+                    orientation: "horizontal"
                     size_hint_y: None
-                    height: "110dp"
+                    height: "64dp"
                     padding: "20dp", "12dp"
-                    spacing: "10dp"
                     
                     MDLabel:
                         text: "Library"
                         font_style: "H6"
                         theme_text_color: "Custom"
                         text_color: "#00D2A0"
-                        size_hint_y: None
-                        height: "30dp"
+                        size_hint_x: None
+                        width: "150dp"
                         halign: "left"
-                    
-                    MDBoxLayout:
-                        orientation: "horizontal"
-                        size_hint_y: None
-                        height: "40dp"
-                        spacing: "10dp"
-                        
-                        MDRaisedButton:
-                            text: "VIDEOS"
-                            md_bg_color: "#00D2A0" if app.library_filter == "videos" else "#1A1A1A"
-                            theme_text_color: "Custom"
-                            text_color: "#0D0D0D" if app.library_filter == "videos" else "#FFFFFF"
-                            on_release: app.filter_library("videos")
-                        
-                        MDRaisedButton:
-                            text: "AUDIO"
-                            md_bg_color: "#00D2A0" if app.library_filter == "audio" else "#1A1A1A"
-                            theme_text_color: "Custom"
-                            text_color: "#0D0D0D" if app.library_filter == "audio" else "#FFFFFF"
-                            on_release: app.filter_library("audio")
-                        
-                        MDRaisedButton:
-                            text: "PLAYLISTS"
-                            md_bg_color: "#00D2A0" if app.library_filter == "playlists" else "#1A1A1A"
-                            theme_text_color: "Custom"
-                            text_color: "#0D0D0D" if app.library_filter == "playlists" else "#FFFFFF"
-                            on_release: app.filter_library("playlists")
                 
-                ScrollView:
-                    do_scroll_x: False
+                MDTabs:
+                    id: library_tabs
+                    tab_indicator_anim: True
+                    tab_indicator_height: "3dp"
                     
-                    MDGridLayout:
-                        id: library_container
-                        cols: 2
-                        adaptive_height: True
-                        padding: "20dp"
-                        spacing: "15dp"
+                    Tab:
+                        title: "Videos"
+                        
+                        ScrollView:
+                            do_scroll_x: False
+                            
+                            MDGridLayout:
+                                id: videos_container
+                                cols: 2
+                                adaptive_height: True
+                                padding: "20dp"
+                                spacing: "15dp"
+                    
+                    Tab:
+                        title: "Audio"
+                        
+                        ScrollView:
+                            do_scroll_x: False
+                            
+                            MDGridLayout:
+                                id: audio_container
+                                cols: 2
+                                adaptive_height: True
+                                padding: "20dp"
+                                spacing: "15dp"
+                    
+                    Tab:
+                        title: "Playlists"
+                        
+                        ScrollView:
+                            do_scroll_x: False
+                            
+                            MDGridLayout:
+                                id: playlists_container
+                                cols: 1
+                                adaptive_height: True
+                                padding: "20dp"
+                                spacing: "15dp"
                 
                 # Custom Bottom Navigation Bar
                 MDBoxLayout:

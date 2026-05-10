@@ -8,6 +8,7 @@ from kivy.animation import Animation
 from kivy.utils import platform
 from kivymd.uix.card import MDCard
 from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.tab import MDTabsBase
 from kivymd.toast import toast
 import threading
 import queue
@@ -284,9 +285,13 @@ class LibraryCard(MDCard):
             self.parent.remove_widget(self)
         toast("File deleted")
 
+class Tab(MDBoxLayout, MDTabsBase):
+    pass
+
 class AnyLoadApp(MDApp):
     is_active_download = BooleanProperty(False)
     splash_dot_index = NumericProperty(0)
+    topbar_dot_index = NumericProperty(0)
     spinner_angle = NumericProperty(0)
     library_filter = StringProperty("videos")
     max_downloads = NumericProperty(3)
@@ -313,6 +318,7 @@ class AnyLoadApp(MDApp):
         self.splash_event = Clock.schedule_interval(self.animate_splash_dots, 0.5)
         Clock.schedule_once(self.switch_to_home, 3.0)
         Clock.schedule_once(self.add_mock_library, 3.5)
+        Clock.schedule_once(self.start_topbar_animation, 3.5)
     
     def request_android_permissions(self):
         try:
@@ -335,6 +341,12 @@ class AnyLoadApp(MDApp):
         if self.splash_event:
             self.splash_event.cancel()
         self.root.ids.screen_manager.current = "home"
+    
+    def start_topbar_animation(self, dt):
+        Clock.schedule_interval(self.animate_topbar_dots, 0.6)
+    
+    def animate_topbar_dots(self, dt):
+        self.topbar_dot_index = (self.topbar_dot_index + 1) % 3
     
     def on_is_active_download(self, instance, value):
         if value:
@@ -397,19 +409,30 @@ class AnyLoadApp(MDApp):
         anim.start(button)
     
     def add_mock_library(self, dt):
-        library_container = self.root.ids.library_container
-        
-        for i, (name, ftype) in enumerate([
-            ("Tutorial Video.mp4", "video"),
-            ("Favorite Song.mp3", "audio"),
-            ("Documentary.mp4", "video"),
-            ("Podcast Episode.mp3", "audio")
-        ]):
-            card = LibraryCard(filename=name, file_type=ftype)
-            library_container.add_widget(card)
+        try:
+            videos_container = self.root.ids.library_tabs.ids.videos_container
+            audio_container = self.root.ids.library_tabs.ids.audio_container
+            
+            # Add video cards
+            for name in ["Tutorial Video.mp4", "Documentary.mp4", "Movie Clip.mp4"]:
+                card = LibraryCard(filename=name, file_type="video")
+                videos_container.add_widget(card)
+            
+            # Add audio cards
+            for name in ["Favorite Song.mp3", "Podcast Episode.mp3"]:
+                card = LibraryCard(filename=name, file_type="audio")
+                audio_container.add_widget(card)
+        except Exception as e:
+            print(f"Mock library error: {e}")
     
     def filter_library(self, filter_type):
         self.library_filter = filter_type
+        if filter_type == "videos":
+            self.root.ids.library_tabs.switch_tab("Videos")
+        elif filter_type == "audio":
+            self.root.ids.library_tabs.switch_tab("Audio")
+        elif filter_type == "playlists":
+            self.root.ids.library_tabs.switch_tab("Playlists")
         toast(f"Showing {filter_type}")
     
     def change_download_path(self):
